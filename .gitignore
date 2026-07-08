@@ -1,7 +1,9 @@
 node_modules/
-   .next/
-   out/
-   .env.local
-   .env
-   .DS_Store
-   *.log
+.next/
+out/
+
+.env
+.env.local
+
+.DS_Store
+*.log
