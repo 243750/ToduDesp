@@ -1,0 +1,70 @@
+@import "tailwindcss";
+
+:root {
+  --background: #150f27;
+  --foreground: #f4f2ff;
+
+  /* Paleta inspirada en Habitica: fondo morado oscuro, acentos de "juego" */
+  --todu-bg: #150f27;           /* fondo principal de la app */
+  --todu-surface: #1f1638;      /* tarjetas / paneles */
+  --todu-surface-alt: #251b45;  /* tarjetas resaltadas / hover */
+  --todu-border: #34285c;
+
+  --todu-primary: #8b5cf6;      /* violeta principal (antes cian) */
+  --todu-primary-dark: #6d28d9;
+  --todu-primary-light: #c4b5fd;
+
+  --todu-gold: #f5b301;         /* moneda / recompensas, igual que Habitica */
+  --todu-danger: #ef4444;       /* vida / racha perdida */
+  --todu-success: #34d399;      /* completado / hábito positivo */
+
+  --todu-text: #f4f2ff;
+  --todu-text-muted: #a89cd1;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-todu-bg: var(--todu-bg);
+  --color-todu-surface: var(--todu-surface);
+  --color-todu-surface-alt: var(--todu-surface-alt);
+  --color-todu-border: var(--todu-border);
+  --color-todu-primary: var(--todu-primary);
+  --color-todu-primary-dark: var(--todu-primary-dark);
+  --color-todu-primary-light: var(--todu-primary-light);
+  --color-todu-gold: var(--todu-gold);
+  --color-todu-danger: var(--todu-danger);
+  --color-todu-success: var(--todu-success);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+/* Transición suave entre pestañas (Tareas / Mi Todú / Descubrir).
+   Se dispara automáticamente porque vive en app/(tabs)/template.js,
+   que Next.js remonta en cada cambio de ruta dentro del grupo. */
+@keyframes todu-page-enter {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.todu-page-enter {
+  animation: todu-page-enter 220ms ease-out;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .todu-page-enter {
+    animation: none;
+  }
+}

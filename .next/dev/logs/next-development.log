@@ -1,0 +1,15 @@
+{"timestamp":"00:00:00.888","source":"Server","level":"LOG","message":""}
+{"timestamp":"00:02:38.870","source":"Browser","level":"INFO","message":"%cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold"}
+{"timestamp":"00:02:54.822","source":"Browser","level":"INFO","message":"%cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold"}
+{"timestamp":"00:02:54.952","source":"Browser","level":"ASSERT","message":"true"}
+{"timestamp":"00:02:54.953","source":"Browser","level":"ASSERT","message":"true"}
+{"timestamp":"00:02:54.953","source":"Browser","level":"ASSERT","message":"true"}
+{"timestamp":"00:02:54.953","source":"Browser","level":"ASSERT","message":"true"}
+{"timestamp":"00:02:55.063","source":"Server","level":"ASSERT","message":"[browser] true \"\\u001b[2m(file:///home/brindis/Descargas/toduclaude5/.next/dev/static/chunks/node_modules_0t9bva1._.js:1010:37)\\u001b[22m\""}
+{"timestamp":"00:02:55.063","source":"Browser","level":"ASSERT","message":"true"}
+{"timestamp":"00:02:55.091","source":"Server","level":"ASSERT","message":"[browser] true \"\\u001b[2m(file:///home/brindis/Descargas/toduclaude5/.next/dev/static/chunks/node_modules_0t9bva1._.js:1010:37)\\u001b[22m\""}
+{"timestamp":"00:02:55.092","source":"Browser","level":"ASSERT","message":"true"}
+{"timestamp":"00:02:55.116","source":"Server","level":"ASSERT","message":"[browser] true \"\\u001b[2m(file:///home/brindis/Descargas/toduclaude5/.next/dev/static/chunks/node_modules_0t9bva1._.js:1010:37)\\u001b[22m\""}
+{"timestamp":"00:02:55.116","source":"Browser","level":"ASSERT","message":"true"}
+{"timestamp":"00:02:55.139","source":"Server","level":"ASSERT","message":"[browser] true \"\\u001b[2m(file:///home/brindis/Descargas/toduclaude5/.next/dev/static/chunks/node_modules_0t9bva1._.js:1010:37)\\u001b[22m\""}
+{"timestamp":"00:02:55.139","source":"Browser","level":"ASSERT","message":"true"}
