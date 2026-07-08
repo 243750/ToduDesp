@@ -1,16 +1,16 @@
 'use client';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Menu, User, Lock, Trash2, LogOut, Check } from 'lucide-react';
+import { Menu, User, Lock, Trash2, LogOut, HelpCircle, X, ShieldCheck } from 'lucide-react';
 import { useSidebar } from '../../../context/SidebarContext';
 import { useAuth } from '../../../context/AuthContext';
 import { api, setStoredUser } from '../../../lib/api';
 
-function Card({ icon: Icon, title, children }) {
+function Card({ icon: Icon, title, children, className = '' }) {
   return (
-    <div className="bg-[#1f1638] border border-white/5 rounded-3xl p-5 shadow-lg">
+    <div className={`bg-[#1f1638] border border-white/5 rounded-3xl p-5 shadow-lg ${className}`}>
       <div className="flex items-center gap-2 mb-4">
-        <div className="w-8 h-8 rounded-xl bg-violet-500/10 border border-violet-500/20 flex items-center justify-center text-violet-400">
+        <div className="w-8 h-8 rounded-xl bg-violet-500/10 border border-violet-500/20 flex items-center justify-center text-violet-400 flex-shrink-0">
           <Icon className="w-4 h-4" />
         </div>
         <h2 className="text-sm font-bold text-white">{title}</h2>
@@ -21,14 +21,16 @@ function Card({ icon: Icon, title, children }) {
 }
 
 const inputClass =
-  'w-full bg-black/30 border border-white/10 rounded-xl px-4 py-3 text-sm text-slate-200 placeholder-slate-500 outline-none focus:border-violet-500/50 transition-colors';
+  'w-full bg-black/30 border border-white/10 rounded-xl px-4 py-3 text-sm text-slate-200 placeholder-slate-500 outline-none focus:border-violet-500/50 transition-colors disabled:opacity-40';
 
 export default function AjustesPage() {
   const { open: openSidebar } = useSidebar();
   const { user, logout } = useAuth();
   const router = useRouter();
+  const [showHelp, setShowHelp] = useState(false);
 
-  // --- Username ---
+  // --- Username (el email no es editable: el backend no tiene un
+  // endpoint para cambiarlo, solo /perfil/username) ---
   const [username, setUsername] = useState(user?.username || '');
   const [usernameMsg, setUsernameMsg] = useState(null);
   const [usernameLoading, setUsernameLoading] = useState(false);
@@ -52,18 +54,26 @@ export default function AjustesPage() {
   // --- Password ---
   const [passwordActual, setPasswordActual] = useState('');
   const [passwordNuevo, setPasswordNuevo] = useState('');
+  const [passwordConfirmar, setPasswordConfirmar] = useState('');
   const [passwordMsg, setPasswordMsg] = useState(null);
   const [passwordLoading, setPasswordLoading] = useState(false);
 
   const handlePassword = async (e) => {
     e.preventDefault();
     setPasswordMsg(null);
+
+    if (passwordNuevo !== passwordConfirmar) {
+      setPasswordMsg({ type: 'error', text: 'Las contraseñas nuevas no coinciden.' });
+      return;
+    }
+
     setPasswordLoading(true);
     try {
       await api.put('/perfil/password', { passwordActual, passwordNuevo });
       setPasswordMsg({ type: 'ok', text: 'Contraseña actualizada.' });
       setPasswordActual('');
       setPasswordNuevo('');
+      setPasswordConfirmar('');
     } catch (err) {
       setPasswordMsg({ type: 'error', text: err.message });
     } finally {
@@ -93,6 +103,7 @@ export default function AjustesPage() {
 
   return (
     <div className="min-h-screen bg-[#150f27] text-slate-200 font-sans pb-28">
+      {/* Header móvil (sin cambios respecto a lo que ya teníamos) */}
       <header className="flex items-center justify-between p-6 lg:hidden">
         <button onClick={openSidebar} className="text-slate-400 hover:text-white transition-colors">
           <Menu className="w-7 h-7" />
@@ -100,14 +111,28 @@ export default function AjustesPage() {
         <h1 className="text-sm font-black text-white uppercase tracking-widest">Ajustes</h1>
         <div className="w-7" />
       </header>
-      <h1 className="hidden lg:block text-xl font-black text-white uppercase tracking-widest px-8 pt-8">
-        Ajustes
-      </h1>
 
-      <main className="max-w-md mx-auto px-6 pt-2 lg:pt-6 flex flex-col gap-5">
+      {/* Header de escritorio: título + botón de ayuda (el bell/avatar del
+          mockup de Stitch se ignora a propósito, ya vive en el sidebar) */}
+      <div className="hidden lg:flex items-start justify-between px-8 pt-8">
+        <div>
+          <h1 className="text-2xl font-black text-white tracking-wide">Ajustes</h1>
+          <p className="text-sm text-slate-400 mt-1">
+            Gestiona tu perfil, seguridad y preferencias de la cuenta.
+          </p>
+        </div>
+        <button
+          onClick={() => setShowHelp(true)}
+          className="text-violet-400 hover:text-violet-300 transition-colors bg-violet-500/10 p-2.5 rounded-full border border-violet-500/20 shadow-[0_0_15px_rgba(139,92,246,0.15)] flex-shrink-0"
+        >
+          <HelpCircle className="w-5 h-5" />
+        </button>
+      </div>
+
+      <main className="max-w-md lg:max-w-3xl mx-auto px-6 pt-2 lg:pt-6 flex flex-col gap-5">
         {/* Perfil actual */}
         <div className="flex items-center gap-3 bg-[#1f1638] border border-white/5 rounded-3xl p-5">
-          <div className="w-12 h-12 rounded-full bg-violet-500/20 border border-violet-500/30 flex items-center justify-center">
+          <div className="w-12 h-12 rounded-full bg-violet-500/20 border border-violet-500/30 flex items-center justify-center flex-shrink-0">
             <User className="w-5 h-5 text-violet-300" />
           </div>
           <div className="min-w-0">
@@ -116,122 +141,220 @@ export default function AjustesPage() {
           </div>
         </div>
 
-        {/* Cambiar username */}
-        <Card icon={User} title="Nombre de usuario">
+        {/* Perfil: username + email (email solo lectura) lado a lado en escritorio */}
+        <Card icon={User} title="Información de perfil">
           <form onSubmit={handleUsername} className="space-y-3">
-            <input
-              type="text"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
-              className={inputClass}
-              placeholder="Nuevo username"
-              required
-            />
+            <div className="grid sm:grid-cols-2 gap-3">
+              <div>
+                <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">
+                  Nombre de usuario
+                </label>
+                <input
+                  type="text"
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
+                  className={inputClass}
+                  placeholder="Nuevo username"
+                  required
+                />
+              </div>
+              <div>
+                <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">
+                  Correo electrónico
+                </label>
+                <input
+                  type="email"
+                  value={user?.email || ''}
+                  disabled
+                  className={inputClass}
+                  placeholder="correo@todu.app"
+                  title="El correo no se puede cambiar por ahora"
+                />
+              </div>
+            </div>
             {usernameMsg && (
               <p className={`text-xs font-semibold ${usernameMsg.type === 'ok' ? 'text-emerald-400' : 'text-rose-400'}`}>
                 {usernameMsg.text}
               </p>
             )}
-            <button
-              type="submit"
-              disabled={usernameLoading}
-              className="w-full py-3 bg-violet-600 hover:bg-violet-500 disabled:opacity-50 text-white font-bold rounded-xl text-sm transition-colors"
-            >
-              {usernameLoading ? 'Guardando...' : 'Guardar'}
-            </button>
+            <div className="flex justify-end">
+              <button
+                type="submit"
+                disabled={usernameLoading}
+                className="px-6 py-3 bg-violet-600 hover:bg-violet-500 disabled:opacity-50 text-white font-bold rounded-xl text-sm transition-colors"
+              >
+                {usernameLoading ? 'Guardando...' : 'Guardar cambios'}
+              </button>
+            </div>
           </form>
         </Card>
 
-        {/* Cambiar contraseña */}
-        <Card icon={Lock} title="Contraseña">
+        {/* Seguridad: contraseña actual, luego nueva + confirmar lado a lado */}
+        <Card icon={ShieldCheck} title="Seguridad y contraseña">
           <form onSubmit={handlePassword} className="space-y-3">
-            <input
-              type="password"
-              value={passwordActual}
-              onChange={(e) => setPasswordActual(e.target.value)}
-              className={inputClass}
-              placeholder="Contraseña actual"
-              required
-            />
-            <input
-              type="password"
-              value={passwordNuevo}
-              onChange={(e) => setPasswordNuevo(e.target.value)}
-              className={inputClass}
-              placeholder="Nueva contraseña"
-              required
-            />
+            <div>
+              <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">
+                Contraseña actual
+              </label>
+              <input
+                type="password"
+                value={passwordActual}
+                onChange={(e) => setPasswordActual(e.target.value)}
+                className={inputClass}
+                placeholder="Contraseña actual"
+                required
+              />
+            </div>
+            <div className="grid sm:grid-cols-2 gap-3">
+              <div>
+                <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">
+                  Nueva contraseña
+                </label>
+                <input
+                  type="password"
+                  value={passwordNuevo}
+                  onChange={(e) => setPasswordNuevo(e.target.value)}
+                  className={inputClass}
+                  placeholder="Nueva contraseña"
+                  required
+                />
+              </div>
+              <div>
+                <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">
+                  Confirmar nueva contraseña
+                </label>
+                <input
+                  type="password"
+                  value={passwordConfirmar}
+                  onChange={(e) => setPasswordConfirmar(e.target.value)}
+                  className={inputClass}
+                  placeholder="Repite la nueva contraseña"
+                  required
+                />
+              </div>
+            </div>
             {passwordMsg && (
               <p className={`text-xs font-semibold ${passwordMsg.type === 'ok' ? 'text-emerald-400' : 'text-rose-400'}`}>
                 {passwordMsg.text}
               </p>
             )}
-            <button
-              type="submit"
-              disabled={passwordLoading}
-              className="w-full py-3 bg-violet-600 hover:bg-violet-500 disabled:opacity-50 text-white font-bold rounded-xl text-sm transition-colors"
-            >
-              {passwordLoading ? 'Guardando...' : 'Cambiar contraseña'}
-            </button>
+            <div className="flex justify-end">
+              <button
+                type="submit"
+                disabled={passwordLoading}
+                className="px-6 py-3 bg-white/10 hover:bg-white/15 disabled:opacity-50 text-white font-bold rounded-xl text-sm transition-colors"
+              >
+                {passwordLoading ? 'Guardando...' : 'Cambiar contraseña'}
+              </button>
+            </div>
           </form>
         </Card>
 
-        {/* Cerrar sesión */}
-        <button
-          onClick={() => {
-            logout();
-            router.push('/login');
-          }}
-          className="w-full flex items-center justify-center gap-2 py-3 bg-white/5 hover:bg-white/10 text-slate-300 font-bold rounded-xl text-sm transition-colors"
-        >
-          <LogOut className="w-4 h-4" />
-          Cerrar sesión
-        </button>
-
-        {/* Eliminar cuenta */}
-        <Card icon={Trash2} title="Zona de peligro">
-          {!confirmDelete ? (
+        {/* Sesión + Zona de peligro: lado a lado en escritorio, apiladas en móvil */}
+        <div className="grid lg:grid-cols-2 gap-5">
+          <Card icon={LogOut} title="Sesión">
+            <p className="text-xs text-slate-400 leading-relaxed mb-4">
+              Cierra tu sesión en este dispositivo. Tus datos siguen sincronizados en cualquier
+              otro lugar donde hayas iniciado sesión.
+            </p>
             <button
-              onClick={() => setConfirmDelete(true)}
-              className="w-full py-3 bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 font-bold rounded-xl text-sm border border-rose-500/20 transition-colors"
+              onClick={() => {
+                logout();
+                router.push('/login');
+              }}
+              className="w-full flex items-center justify-center gap-2 py-3 bg-white/5 hover:bg-white/10 text-slate-300 font-bold rounded-xl text-sm transition-colors"
             >
-              Eliminar mi cuenta
+              <LogOut className="w-4 h-4" />
+              Cerrar sesión
             </button>
-          ) : (
-            <form onSubmit={handleDelete} className="space-y-3">
-              <p className="text-xs text-rose-300 leading-relaxed">
-                Esto borra tu cuenta y tu historial de tareas de forma permanente. Confirma tu
-                contraseña para continuar.
-              </p>
-              <input
-                type="password"
-                value={deletePassword}
-                onChange={(e) => setDeletePassword(e.target.value)}
-                className={inputClass}
-                placeholder="Tu contraseña"
-                required
-              />
-              {deleteMsg && <p className="text-xs font-semibold text-rose-400">{deleteMsg}</p>}
-              <div className="flex gap-2">
+          </Card>
+
+          <Card icon={Trash2} title="Zona de peligro">
+            {!confirmDelete ? (
+              <>
+                <p className="text-xs text-slate-400 leading-relaxed mb-4">
+                  Una vez que elimines tu cuenta, no hay vuelta atrás. Por favor, asegúrate.
+                </p>
                 <button
-                  type="button"
-                  onClick={() => setConfirmDelete(false)}
-                  className="flex-1 py-3 bg-white/5 hover:bg-white/10 text-slate-300 font-bold rounded-xl text-sm transition-colors"
+                  onClick={() => setConfirmDelete(true)}
+                  className="w-full py-3 bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 font-bold rounded-xl text-sm border border-rose-500/20 transition-colors"
                 >
-                  Cancelar
+                  Eliminar mi cuenta
                 </button>
-                <button
-                  type="submit"
-                  disabled={deleteLoading}
-                  className="flex-1 py-3 bg-rose-600 hover:bg-rose-500 disabled:opacity-50 text-white font-bold rounded-xl text-sm transition-colors"
-                >
-                  {deleteLoading ? 'Eliminando...' : 'Sí, eliminar'}
-                </button>
-              </div>
-            </form>
-          )}
-        </Card>
+              </>
+            ) : (
+              <form onSubmit={handleDelete} className="space-y-3">
+                <p className="text-xs text-rose-300 leading-relaxed">
+                  Esto borra tu cuenta y tu historial de tareas de forma permanente. Confirma tu
+                  contraseña para continuar.
+                </p>
+                <input
+                  type="password"
+                  value={deletePassword}
+                  onChange={(e) => setDeletePassword(e.target.value)}
+                  className={inputClass}
+                  placeholder="Tu contraseña"
+                  required
+                />
+                {deleteMsg && <p className="text-xs font-semibold text-rose-400">{deleteMsg}</p>}
+                <div className="flex gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setConfirmDelete(false)}
+                    className="flex-1 py-3 bg-white/5 hover:bg-white/10 text-slate-300 font-bold rounded-xl text-sm transition-colors"
+                  >
+                    Cancelar
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={deleteLoading}
+                    className="flex-1 py-3 bg-rose-600 hover:bg-rose-500 disabled:opacity-50 text-white font-bold rounded-xl text-sm transition-colors"
+                  >
+                    {deleteLoading ? 'Eliminando...' : 'Sí, eliminar'}
+                  </button>
+                </div>
+              </form>
+            )}
+          </Card>
+        </div>
       </main>
+
+      {/* Modal de ayuda (mismo patrón que en Tareas) */}
+      {showHelp && (
+        <div className="fixed inset-0 z-50 bg-[#150f27]/95 backdrop-blur-md flex flex-col items-center justify-center p-6">
+          <div className="bg-[#1f1638] border border-violet-500/30 rounded-[2rem] p-6 w-full max-w-sm relative shadow-[0_0_40px_rgba(139,92,246,0.15)]">
+            <button
+              onClick={() => setShowHelp(false)}
+              className="absolute top-5 right-5 text-slate-400 hover:text-white bg-white/5 p-1.5 rounded-full transition-colors"
+            >
+              <X className="w-5 h-5" />
+            </button>
+            <div className="flex flex-col items-center text-center mb-6 border-b border-white/5 pb-6 pt-2">
+              <div className="w-16 h-16 bg-violet-500/10 border border-violet-500/30 rounded-2xl flex items-center justify-center text-violet-400 mb-4">
+                <HelpCircle className="w-8 h-8" />
+              </div>
+              <h3 className="text-xl font-black text-white mb-1">Ajustes</h3>
+              <p className="text-xs text-slate-400">Tu perfil, seguridad y cuenta</p>
+            </div>
+            <div className="space-y-4 text-sm text-slate-300">
+              <p>
+                Aquí puedes cambiar tu nombre de usuario, actualizar tu contraseña, cerrar sesión
+                en este dispositivo, o eliminar tu cuenta de forma permanente.
+              </p>
+              <p className="text-slate-400 text-xs">
+                Por ahora el correo electrónico no se puede editar — puedes cambiarlo escribiéndonos
+                si lo necesitas.
+              </p>
+            </div>
+            <button
+              onClick={() => setShowHelp(false)}
+              className="w-full mt-8 py-3.5 bg-violet-600 hover:bg-violet-500 text-white font-black rounded-2xl transition-colors text-sm tracking-wider uppercase"
+            >
+              Entendido
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
