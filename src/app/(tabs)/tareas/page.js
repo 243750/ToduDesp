@@ -7,8 +7,6 @@ import { useAuth } from '../../../context/AuthContext';
 import { api } from '../../../lib/api';
 import AnimatedButton from '../../../components/ui/animated-button';
 
-// Dificultad al estilo Habitica: cada nivel mapea a un valor de XP real
-// que ya entiende el backend (POST /tareas espera "xpValor").
 const DIFICULTADES = [
   { key: 'trivial', label: 'Trivial', xpValor: 10 },
   { key: 'facil', label: 'Fácil', xpValor: 25 },
@@ -16,65 +14,9 @@ const DIFICULTADES = [
   { key: 'dificil', label: 'Difícil', xpValor: 100 },
 ];
 
-// ─────────────────────────────────────────────────────────────────
-// MODO PREVIEW: mientras esto sea `true`, la pantalla NO llama al
-// backend real (así que no hace falta JWT ni Authorization header)
-// y en su lugar usa estos datos falsos, solo para ver cómo se ve.
-// Cuando quieras conectar el backend de verdad, pon esto en `false`
-// y borra MOCK_TAREAS (o déjalo, no se usa si USE_MOCK_DATA es false).
-// ─────────────────────────────────────────────────────────────────
-const USE_MOCK_DATA = true;
-
-const MOCK_TAREAS = [
-  {
-    id: 'mock-1',
-    titulo: 'Lavar los trastes',
-    descripcion: '08:00 hrs',
-    xpValor: 10,
-    estado: 'pendiente',
-  },
-  {
-    id: 'mock-2',
-    titulo: 'Terminar tarea de matemáticas',
-    descripcion: '17:30 hrs',
-    xpValor: 50,
-    estado: 'pendiente',
-  },
-  {
-    id: 'mock-3',
-    titulo: 'Ir al gimnasio',
-    descripcion: '19:00 hrs',
-    xpValor: 100,
-    estado: 'vencida',
-  },
-  {
-    id: 'mock-4',
-    titulo: 'Leer 20 páginas',
-    descripcion: '21:00 hrs',
-    xpValor: 25,
-    estado: 'completed',
-  },
-  {
-    id: 'mock-5',
-    titulo: 'Ordenar el cuarto',
-    descripcion: '12:00 hrs',
-    xpValor: 25,
-    estado: 'pendiente',
-  },
-  {
-    id: 'mock-6',
-    titulo: 'Sacar a pasear al perro',
-    descripcion: '07:30 hrs',
-    xpValor: 10,
-    estado: 'completed',
-  },
-];
-
 function TareaFormModal({ onClose, onSave, tareaInicial }) {
   const esEdicion = !!tareaInicial;
 
-  // Si estamos editando, tratamos de recuperar el horario que se guardó
-  // dentro de "descripcion" (formato "HH:MM hrs"); si no calza, usamos 09:00.
   const horarioInicial = (() => {
     const match = tareaInicial?.descripcion?.match(/^(\d{2}:\d{2})/);
     return match ? match[1] : '09:00';
@@ -96,23 +38,6 @@ function TareaFormModal({ onClose, onSave, tareaInicial }) {
     setError(null);
     try {
       const xpValor = DIFICULTADES.find((d) => d.key === dificultad).xpValor;
-      // El backend no tiene un campo de horario propio (solo titulo/descripcion/
-      // xpValor), así que lo guardamos en descripcion con un prefijo fácil de
-      // parsear ("HH:MM · ...") para poder mostrarlo de vuelta en la tarjeta.
-      if (USE_MOCK_DATA) {
-        // Modo preview: no llamamos al backend (no hay JWT), solo simulamos
-        // que la tarea se creó/editó y actualizamos el estado local.
-        await new Promise((resolve) => setTimeout(resolve, 400));
-        onSave({
-          id: tareaInicial?.id ?? `mock-${Date.now()}`,
-          titulo: titulo.trim(),
-          descripcion: `${horario} hrs`,
-          xpValor,
-          estado: tareaInicial?.estado ?? 'pendiente',
-        });
-        onClose();
-        return;
-      }
 
       if (esEdicion) {
         const data = await api.put(`/tareas/${tareaInicial.id}`, {
@@ -239,7 +164,6 @@ function TaskCard({ tarea, onEdit, onDelete }) {
       </div>
 
       <div className="flex items-center gap-2 flex-shrink-0">
-        {/* Editar */}
         <button
           onClick={() => onEdit(tarea)}
           aria-label="Editar tarea"
@@ -248,7 +172,6 @@ function TaskCard({ tarea, onEdit, onDelete }) {
           <Pencil className="w-4 h-4" />
         </button>
 
-        {/* Eliminar */}
         <button
           onClick={() => onDelete(tarea)}
           aria-label="Eliminar tarea"
@@ -257,7 +180,6 @@ function TaskCard({ tarea, onEdit, onDelete }) {
           <Trash2 className="w-4 h-4" />
         </button>
 
-        {/* Verificar con foto (solo si no está completada) */}
         {!isCompletada && (
           <button className="w-12 h-12 rounded-[1.2rem] bg-violet-500/10 text-violet-400 border border-violet-500/20 flex items-center justify-center hover:bg-violet-500 hover:text-white transition-colors">
             <Camera className="w-5 h-5" />
@@ -271,7 +193,7 @@ function TaskCard({ tarea, onEdit, onDelete }) {
 export default function TareasPage() {
   const [showHelp, setShowHelp] = useState(false);
   const [showCrear, setShowCrear] = useState(false);
-  const [tareaEditando, setTareaEditando] = useState(null); // tarea seleccionada para editar, o null
+  const [tareaEditando, setTareaEditando] = useState(null);
   const { open: openSidebar } = useSidebar();
   const { user } = useAuth();
 
@@ -279,9 +201,6 @@ export default function TareasPage() {
   const [loadingTareas, setLoadingTareas] = useState(true);
   const [errorTareas, setErrorTareas] = useState(null);
 
-  // Tamaño del robot: más grande en escritorio (lg) que en móvil.
-  // ToduAvatar recibe el tamaño en píxeles vía JS (no es una clase CSS),
-  // así que detectamos el ancho de pantalla para decidir cuál usar.
   const [avatarSize, setAvatarSize] = useState(170);
 
   useEffect(() => {
@@ -296,21 +215,6 @@ export default function TareasPage() {
   useEffect(() => {
     let cancelled = false;
 
-    if (USE_MOCK_DATA) {
-      // Modo preview: no pega al backend (no requiere JWT), solo carga
-      // los datos falsos de arriba, con un pequeño delay para simular red.
-      const timer = setTimeout(() => {
-        if (!cancelled) {
-          setTareas(MOCK_TAREAS);
-          setLoadingTareas(false);
-        }
-      }, 300);
-      return () => {
-        cancelled = true;
-        clearTimeout(timer);
-      };
-    }
-
     api
       .get('/tareas/mis-tareas')
       .then((data) => {
@@ -322,6 +226,7 @@ export default function TareasPage() {
       .finally(() => {
         if (!cancelled) setLoadingTareas(false);
       });
+
     return () => {
       cancelled = true;
     };
@@ -331,15 +236,11 @@ export default function TareasPage() {
     const confirmado = window.confirm(`¿Eliminar "${tarea.titulo}"? Esta acción no se puede deshacer.`);
     if (!confirmado) return;
 
-    // Optimista: la quitamos de la lista de inmediato.
     setTareas((prev) => prev.filter((t) => t.id !== tarea.id));
-
-    if (USE_MOCK_DATA) return; // modo preview: no hay backend que avisar
 
     try {
       await api.delete(`/tareas/${tarea.id}`);
     } catch (err) {
-      // Si falla el borrado en el backend, la regresamos a la lista.
       setTareas((prev) => [tarea, ...prev]);
       setErrorTareas(err.message);
     }
@@ -347,7 +248,6 @@ export default function TareasPage() {
 
   return (
     <div className="min-h-screen bg-[#150f27] text-slate-200 font-sans pb-28 lg:pb-12 overflow-x-hidden relative">
-      {/* 1. Header Minimalista con Saludo */}
       <header className="flex items-center justify-between p-6">
         <button onClick={openSidebar} className="text-slate-400 hover:text-white transition-colors lg:hidden">
           <Menu className="w-7 h-7" />
@@ -368,11 +268,7 @@ export default function TareasPage() {
         </button>
       </header>
 
-      {/* 2. Contenido: en móvil es una sola columna (Todú arriba, tareas abajo);
-             en escritorio (lg) se convierte en 2 columnas lado a lado. */}
       <main className="max-w-md mx-auto px-6 flex flex-col gap-4 lg:max-w-5xl lg:flex-row lg:items-start lg:gap-10 lg:px-10">
-
-        {/* 2a. Hero Section: Todú Protagonista con FX */}
         <section className="flex flex-col items-center justify-center w-full pt-2 pb-8 lg:w-72 lg:flex-shrink-0 lg:sticky lg:top-8 lg:pb-0 lg:-translate-x-6">
           <div
             className="relative mx-auto mb-6"
@@ -388,7 +284,6 @@ export default function TareasPage() {
             </div>
           </div>
 
-          {/* En escritorio el botón de crear tarea vive junto a Todú en vez de flotar */}
           <AnimatedButton
             onClick={() => setShowCrear(true)}
             className="hidden lg:flex w-full"
@@ -398,7 +293,6 @@ export default function TareasPage() {
           </AnimatedButton>
         </section>
 
-        {/* 2b. Lista de Tareas (datos reales) */}
         <div className="flex-1 w-full flex flex-col gap-4">
           <h2 className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">Tareas de Hoy</h2>
 
@@ -431,7 +325,6 @@ export default function TareasPage() {
         </div>
       </main>
 
-      {/* 4. Botón Flotante para Agregar Tareas (solo móvil; en escritorio está junto a Todú) */}
       <div className="fixed bottom-24 w-full flex justify-center z-40 pointer-events-none lg:hidden">
         <button
           onClick={() => setShowCrear(true)}
@@ -458,7 +351,6 @@ export default function TareasPage() {
         />
       )}
 
-      {/* 5. Modal de Ayuda */}
       {showHelp && (
         <div className="fixed inset-0 z-50 bg-[#150f27]/95 backdrop-blur-md flex flex-col items-center justify-center p-6">
           <div className="bg-[#1f1638] border border-violet-500/30 rounded-[2rem] p-6 w-full max-w-sm relative shadow-[0_0_40px_rgba(139,92,246,0.15)]">

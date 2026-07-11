@@ -1,40 +1,67 @@
 'use client';
-import { useState } from 'react';
+import { useState, useEffect, useCallback } from 'react';
+import { api } from '../../lib/api';
+import { useAuth } from '../../context/AuthContext';
 
 export default function useRobotState() {
-  // Inicializamos con el estado "idle" que equivale a la animación de espera (1)[cite: 1]
+  const { user } = useAuth();
   const [emocionActual, setEmocionActual] = useState('idle');
-  const [mensaje, setMensaje] = useState('¡Hola! Estoy listo para ayudarte a organizar tu día.');
+  const [mensaje, setMensaje] = useState('¡Hola! Estoy listo para ayudarte.');
+  const [loading, setLoading] = useState(false);
 
-  const simularAprobacionTarea = () => {
-    // Cambia al estado surprised (5)[cite: 1]
-    setEmocionActual('surprised'); 
-    setMensaje('Revisando tus pendientes... ¡No te desvíes del objetivo!');
-  };
+  useEffect(() => {
+    if (!user?.id) return;
 
-  const simularTareaUrgente = () => {
-    // Cambia al estado scared (4)[cite: 1]
-    setEmocionActual('scared'); 
-    setMensaje('¡Se ha añadido una nueva tarea! Vamos a darle prioridad.');
-  };
+    api.get(`/robot/${user.id}/state`)
+      .then((data) => {
+        setEmocionActual(data.emotion ?? 'idle');
+        setMensaje(data.message ?? '¡Hola! Estoy listo para ayudarte.');
+      })
+      .catch(() => {
+        setEmocionActual('idle');
+      });
+  }, [user]);
 
-  const simularTareaCompletada = () => {
-    // Cambia al estado happy (2)[cite: 1]
-    setEmocionActual('happy'); 
-    setMensaje('¡Excelente trabajo! Una tarea menos de la que preocuparse.');
-    
-    // Regresa a estado normal (idle) después de 3 segundos
-    setTimeout(() => {
-      setEmocionActual('idle'); 
-      setMensaje('¿Cuál será nuestro próximo paso?');
-    }, 3000);
-  };
+  const dispararEvento = useCallback(async (evento) => {
+    if (!user?.id) return;
+    setLoading(true);
+    try {
+      const data = await api.post(`/robot/${user.id}/event`, { event: evento });
+      setEmocionActual(data.emotion ?? 'idle');
+      setMensaje(data.message ?? '');
+
+      if (['happy', 'surprised', 'scared'].includes(data.emotion)) {
+        setTimeout(async () => {
+          try {
+            const estadoActual = await api.get(`/robot/${user.id}/state`);
+            setEmocionActual(estadoActual.emotion ?? 'idle');
+            setMensaje(estadoActual.message ?? '');
+          } catch {
+            setEmocionActual('idle');
+          }
+        }, 4000);
+      }
+    } catch {
+      // Si falla el backend el robot no se rompe
+    } finally {
+      setLoading(false);
+    }
+  }, [user]);
+
+  const tareaCompletada = useCallback(() => dispararEvento('TASK_COMPLETED'), [dispararEvento]);
+  const tareaRechazada  = useCallback(() => dispararEvento('TASK_REJECTED'),  [dispararEvento]);
+  const tareaUrgente    = useCallback(() => dispararEvento('TASK_URGENT'),    [dispararEvento]);
+  const subioDeNivel    = useCallback(() => dispararEvento('LEVEL_UP'),       [dispararEvento]);
+  const sinActividad    = useCallback(() => dispararEvento('NO_ACTIVITY'),    [dispararEvento]);
 
   return {
     emocionActual,
     mensaje,
-    simularAprobacionTarea,
-    simularTareaUrgente,
-    simularTareaCompletada,
+    loading,
+    tareaCompletada,
+    tareaRechazada,
+    tareaUrgente,
+    subioDeNivel,
+    sinActividad,
   };
 }
