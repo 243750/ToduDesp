@@ -6,6 +6,7 @@ import { useSidebar } from '../../../context/SidebarContext';
 import { useAuth } from '../../../context/AuthContext';
 import AnimatedButton from '../../../components/ui/animated-button';
 import useTareas from '../../../features/tareas/hooks/useTareas';
+import useRobotState from '../../../features/robot/hooks/useRobotState';
 import TaskCard from '../../../features/tareas/components/TaskCard';
 import TareaFormModal from '../../../features/tareas/components/TareaFormModal';
 import EvidenciaModal from '../../../features/tareas/components/EvidenciaModal';
@@ -27,6 +28,8 @@ export default function TareasPage() {
     eliminarTarea,
     subirEvidencia,
   } = useTareas();
+
+  const { emocionActual, tareaCompletada } = useRobotState();
 
   const [avatarSize, setAvatarSize] = useState(170);
 
@@ -77,7 +80,7 @@ export default function TareasPage() {
             <div className="absolute top-1/2 -right-6 w-2 h-2 bg-violet-300 rounded-full blur-[1px] animate-bounce" style={{ animationDelay: '0.5s' }}></div>
             <div className="absolute -bottom-2 -left-2 w-2.5 h-2.5 bg-rose-400 rounded-full blur-[1px] animate-bounce" style={{ animationDelay: '0.8s' }}></div>
             <div className="absolute inset-0 flex items-center justify-center overflow-visible">
-              <ToduAvatar emotion="idle" size={avatarSize} />
+              <ToduAvatar emotion={emocionActual} size={avatarSize} />
             </div>
           </div>
           <AnimatedButton onClick={() => setShowCrear(true)} className="hidden lg:flex w-full">
@@ -143,7 +146,10 @@ export default function TareasPage() {
         <EvidenciaModal
           tarea={tareaEvidencia}
           onClose={() => setTareaEvidencia(null)}
-          onSuccess={() => setTareaEvidencia(null)}
+          onSuccess={() => {
+            tareaCompletada();
+            setTareaEvidencia(null);
+          }}
           subirEvidencia={subirEvidencia}
         />
       )}
