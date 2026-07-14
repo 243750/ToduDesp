@@ -2,80 +2,65 @@
 import { useRive, useStateMachineInput, Layout, Fit, Alignment } from '@rive-app/react-canvas';
 import { useEffect } from 'react';
 
-export default function ToduAvatar({ emotion = 'idle', size = 110, zoom = 1.3 }) {
+// El input REAL confirmado en vivo (no son 5 booleanos separados, es
+// UNO numérico): 0 = normal, 1 = feliz, 2 = triste, 3 = asustado,
+// 4 = sorprendido.
+const EMOCION_A_NUMERO = {
+  idle: 0,
+  happy: 1,
+  sad: 2,
+  scared: 3,
+  surprised: 4,
+};
+
+export default function ToduAvatar({ emotion = 'idle', mensaje = '', size = 110, zoom = 1.3 }) {
   const { rive, RiveComponent } = useRive({
-    src: '/todufinal.riv',
-    stateMachines: 'State Machine 1', // Confirmado: coincide con el .riv
+    src: '/toduoptimo.riv',
+    stateMachines: 'State Machine 1',
     autoplay: true,
-    // Fit.Contain nunca recorta el artboard: siempre se ve completo y centrado.
-    // El "acercamiento" para que se vea más grande lo controlamos nosotros
-    // con la prop `zoom`, no dejando que Rive decida el recorte (Cover).
     layout: new Layout({
       fit: Fit.Contain,
       alignment: Alignment.Center,
     }),
   });
 
-  // 1. Inputs de las Emociones
-  const smilingInput = useStateMachineInput(rive, 'State Machine 1', 'Smiling');
-  const happyInput = useStateMachineInput(rive, 'State Machine 1', 'Happy');
-  const sadInput = useStateMachineInput(rive, 'State Machine 1', 'Sad');
-  const scaredInput = useStateMachineInput(rive, 'State Machine 1', 'Scared');
-  const surprisedInput = useStateMachineInput(rive, 'State Machine 1', 'Surprised');
+  const expressionsInput = useStateMachineInput(rive, 'State Machine 1', 'Expressions');
+  const isTrackingInput = useStateMachineInput(rive, 'State Machine 1', 'IsTracking');
+  const seasonalInput = useStateMachineInput(rive, 'State Machine 1', 'Seasonal');
 
-  // 2. Inputs de los Accesorios (Desbloqueables)
-  const easterInput = useStateMachineInput(rive, 'State Machine 1', 'Easter');
-  const halloweenInput = useStateMachineInput(rive, 'State Machine 1', 'Halloween');
-  const christmasInput = useStateMachineInput(rive, 'State Machine 1', 'Christmas');
-
-  // Apagar accesorios por defecto al cargar
+  // Prende el seguimiento de ojos con el mouse una sola vez.
   useEffect(() => {
-    if (easterInput) easterInput.value = false;
-    if (halloweenInput) halloweenInput.value = false;
-    if (christmasInput) christmasInput.value = false;
-  }, [easterInput, halloweenInput, christmasInput]);
+    if (isTrackingInput) isTrackingInput.value = true;
+    if (seasonalInput) seasonalInput.value = 0; // sin accesorio de temporada por defecto
+  }, [isTrackingInput, seasonalInput]);
 
-  // Manejar el cambio de emociones
+  // La "perilla" numérica de las emociones.
   useEffect(() => {
-    if (!rive) return;
+    if (!rive || !expressionsInput) return;
+    expressionsInput.value = EMOCION_A_NUMERO[emotion] ?? 0;
+  }, [emotion, rive, expressionsInput]);
 
-    // Reseteamos todas a falso primero
-    if (smilingInput) smilingInput.value = false;
-    if (happyInput) happyInput.value = false;
-    if (sadInput) sadInput.value = false;
-    if (scaredInput) scaredInput.value = false;
-    if (surprisedInput) surprisedInput.value = false;
+  return (
+    <div className="relative inline-flex flex-col items-center justify-center">
+      {/* Globo de diálogo */}
+      {mensaje && (
+        <div className="absolute -top-10 left-1/2 -translate-x-1/2 z-50 animate-in fade-in zoom-in-95 slide-in-from-bottom-2 duration-300 pointer-events-none">
+          <div className="bg-white text-violet-900 text-xs font-black px-4 py-2.5 rounded-2xl rounded-bl-sm shadow-[0_10px_25px_rgba(139,92,246,0.3)] whitespace-nowrap border-2 border-violet-100 relative">
+            {mensaje}
+            <div className="absolute -bottom-[8px] left-2 w-0 h-0 border-t-[8px] border-t-white border-r-[8px] border-r-transparent border-l-[8px] border-l-transparent drop-shadow-sm"></div>
+          </div>
+        </div>
+      )}
 
-    // Activamos la que pasamos por prop
-    switch (emotion) {
-      case 'smiling': if (smilingInput) smilingInput.value = true; break;
-      case 'happy': if (happyInput) happyInput.value = true; break;
-      case 'sad': if (sadInput) sadInput.value = true; break;
-      case 'scared': if (scaredInput) scaredInput.value = true; break;
-      case 'surprised': if (surprisedInput) surprisedInput.value = true; break;
-      case 'idle':
-      default:
-        // Todas en falso lo dejan en estado neutral
-        break;
-    }
-  }, [emotion, rive, smilingInput, happyInput, sadInput, scaredInput, surprisedInput]);
-
-return (
-    // 1. El marco exacto: tamaño fijo que definís desde fuera (size)
-    <div
-      style={{ width: size, height: size }}
-      className="relative flex justify-center items-center overflow-hidden"
-    >
-      {/*
-        2. inset-0 (en vez de dejar que el navegador calcule una "posición
-        estática" solo con flex) fuerza a que este contenedor ocupe el marco
-        completo de forma determinista — esto corrige el ligero desliz hacia
-        la izquierda que se veía antes. El `zoom` interno sigue agrandando
-        las dimensiones reales (no CSS transform) para no perder nitidez.
-      */}
-      <div className="absolute inset-0 flex justify-center items-center">
-        <div style={{ width: `${zoom * 100}%`, height: `${zoom * 100}%` }} className="flex justify-center items-center">
-          <RiveComponent className="w-full h-full" />
+      {/* Avatar Rive */}
+      <div
+        style={{ width: size, height: size }}
+        className="relative flex justify-center items-center overflow-hidden"
+      >
+        <div className="absolute inset-0 flex justify-center items-center">
+          <div style={{ width: `${zoom * 100}%`, height: `${zoom * 100}%` }} className="flex justify-center items-center">
+            <RiveComponent className="w-full h-full" />
+          </div>
         </div>
       </div>
     </div>
