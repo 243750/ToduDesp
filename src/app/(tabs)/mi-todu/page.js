@@ -8,16 +8,16 @@ import MiniToduHelper from './components/MiniToduHelper';
 
 export default function MiToduPage() {
   const { open: openSidebar } = useSidebar();
-
   const { progreso } = useGamificacion();
-  const { emocionActual } = useRobotState();
+
+  // NUEVO: Conectamos el Cerebro Autónomo indicándole que estamos en "mi-todu"
+  const { emocionActual, mensaje } = useRobotState('mi-todu');
 
   const xpPct = progreso?.progresoPorcentaje ?? 0;
 
   return (
     <div className="min-h-screen bg-[#150f27] text-slate-200 font-sans pb-28 overflow-x-hidden relative">
 
-      {/* Header Consistente */}
       <header className="flex justify-between items-center p-6">
         <button onClick={openSidebar} className="text-slate-400 hover:text-white transition-colors lg:hidden">
           <Menu className="w-8 h-8" />
@@ -28,15 +28,14 @@ export default function MiToduPage() {
 
       <main className="max-w-md mx-auto px-6 flex flex-col gap-6">
 
-        {/* Sección del Avatar Principal en Grande */}
         <section className="flex flex-col items-center justify-center py-4">
           <div className="relative w-56 h-56 flex items-center justify-center">
             <div className="absolute inset-0 bg-gradient-to-t from-[#6d28d9]/30 to-transparent rounded-full blur-2xl"></div>
-            <ToduAvatar emotion={emocionActual} size={260} />
+            {/* El avatar reaccionará y hablará automáticamente gracias al hook */}
+            <ToduAvatar emotion={emocionActual} mensaje={mensaje} size={260} />
           </div>
         </section>
 
-        {/* Tarjeta de Estadísticas (Nivel y Racha) */}
         <div className="stat-card-outer">
           <div className="stat-card-dot"></div>
           <section className="stat-card p-5 shadow-lg">
@@ -58,7 +57,11 @@ export default function MiToduPage() {
                 </div>
               </div>
 
-              {/* Barra de XP estilo TikTok (Gradiente intenso) */}
+              <div className="flex items-center justify-between bg-black/30 border border-amber-500/20 rounded-2xl px-4 py-3 mb-4">
+                <span className="text-[10px] font-bold text-amber-400 uppercase tracking-widest">Cartera</span>
+                <span className="text-lg font-black text-amber-400">{progreso?.xpDisponible ?? 0} XP</span>
+              </div>
+
               <div className="relative pt-2">
                 <div className="flex justify-between text-xs font-bold mb-1.5">
                   <span className="text-[#a78bfa]">{progreso?.xpActual ?? 0} XP</span>
@@ -75,7 +78,6 @@ export default function MiToduPage() {
           </section>
         </div>
 
-        {/* Aquí entra el Todúcito a dar instrucciones */}
         <MiniToduHelper />
 
       </main>

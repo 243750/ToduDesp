@@ -10,6 +10,7 @@ import useRobotState from '../../../features/robot/hooks/useRobotState';
 import TaskCard from '../../../features/tareas/components/TaskCard';
 import TareaFormModal from '../../../features/tareas/components/TareaFormModal';
 import EvidenciaModal from '../../../features/tareas/components/EvidenciaModal';
+import useGamificacion from '../../../features/gamificacion/hooks/useGamificacion';
 
 export default function TareasPage() {
   const [showHelp, setShowHelp] = useState(false);
@@ -18,6 +19,18 @@ export default function TareasPage() {
   const [tareaEvidencia, setTareaEvidencia] = useState(null);
   const { open: openSidebar } = useSidebar();
   const { user } = useAuth();
+  
+  // NUEVO: Le decimos al hook en qué contexto estamos
+  const robotState = useRobotState('tareas'); 
+  const { emocionActual, mensaje, tareaCompletada } = robotState;
+
+  // Blindaje temporal: si por lo que sea el hook no trae estas dos funciones
+  const hablar = typeof robotState.hablar === 'function' ? robotState.hablar : () => {};
+  const forzarEmocion = typeof robotState.forzarEmocion === 'function' ? robotState.forzarEmocion : () => {};
+
+  if (typeof robotState.hablar !== 'function') {
+    console.error('[DIAGNÓSTICO] useRobotState() no trae "hablar". Esto NO debería pasar — avísale a Claude con esta línea.', robotState);
+  }
 
   const {
     tareas,
@@ -29,7 +42,7 @@ export default function TareasPage() {
     subirEvidencia,
   } = useTareas();
 
-  const { emocionActual, tareaCompletada } = useRobotState();
+  const { refrescar: refrescarGamificacion } = useGamificacion();
 
   const [avatarSize, setAvatarSize] = useState(170);
 
@@ -41,6 +54,9 @@ export default function TareasPage() {
     window.addEventListener('resize', updateAvatarSize);
     return () => window.removeEventListener('resize', updateAvatarSize);
   }, []);
+
+  // NOTA: Toda la lógica de "Frases Tareas", "timerSaludo" y "timerAmbiente"
+  // fue eliminada de aquí porque ahora el hook useRobotState('tareas') lo hace automáticamente.
 
   const handleDelete = async (tarea) => {
     const confirmado = window.confirm(`¿Eliminar "${tarea.titulo}"? Esta acción no se puede deshacer.`);
@@ -73,14 +89,17 @@ export default function TareasPage() {
       </header>
 
       <main className="max-w-md mx-auto px-6 flex flex-col gap-4 lg:max-w-5xl lg:flex-row lg:items-start lg:gap-10 lg:px-10">
+        
+        {/* AVATAR SECTION */}
         <section className="flex flex-col items-center justify-center w-full pt-2 pb-8 lg:w-72 lg:flex-shrink-0 lg:sticky lg:top-8 lg:pb-0 lg:-translate-x-6">
           <div className="relative mx-auto mb-6" style={{ width: avatarSize + 20, height: avatarSize + 20 }}>
             <div className="absolute inset-0 bg-violet-500/30 rounded-full blur-2xl animate-pulse"></div>
             <div className="absolute -top-2 -left-4 w-3 h-3 bg-yellow-400 rounded-full blur-[2px] animate-bounce" style={{ animationDelay: '0.2s' }}></div>
             <div className="absolute top-1/2 -right-6 w-2 h-2 bg-violet-300 rounded-full blur-[1px] animate-bounce" style={{ animationDelay: '0.5s' }}></div>
             <div className="absolute -bottom-2 -left-2 w-2.5 h-2.5 bg-rose-400 rounded-full blur-[1px] animate-bounce" style={{ animationDelay: '0.8s' }}></div>
+            
             <div className="absolute inset-0 flex items-center justify-center overflow-visible">
-              <ToduAvatar emotion={emocionActual} size={avatarSize} />
+              <ToduAvatar emotion={emocionActual} mensaje={mensaje} size={avatarSize} />
             </div>
           </div>
           <AnimatedButton onClick={() => setShowCrear(true)} className="hidden lg:flex w-full">
@@ -89,6 +108,7 @@ export default function TareasPage() {
           </AnimatedButton>
         </section>
 
+        {/* TAREAS SECTION */}
         <div className="flex-1 w-full flex flex-col gap-4">
           <h2 className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">Tareas de Hoy</h2>
           {loadingTareas && <p className="text-sm text-slate-500 text-center py-8">Cargando tus tareas...</p>}
@@ -114,6 +134,7 @@ export default function TareasPage() {
         </div>
       </main>
 
+      {/* FAB MOBILE */}
       <div className="fixed bottom-24 w-full flex justify-center z-40 pointer-events-none lg:hidden">
         <button
           onClick={() => setShowCrear(true)}
@@ -148,6 +169,7 @@ export default function TareasPage() {
           onClose={() => setTareaEvidencia(null)}
           onSuccess={() => {
             tareaCompletada();
+            refrescarGamificacion();
             setTareaEvidencia(null);
           }}
           subirEvidencia={subirEvidencia}

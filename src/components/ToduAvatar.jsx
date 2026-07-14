@@ -1,58 +1,61 @@
 'use client';
-import { useRive, useStateMachineInput, Layout, Fit, Alignment } from '@rive-app/react-canvas';
+import { useRive, Layout, Fit, Alignment } from '@rive-app/react-canvas';
 import { useEffect } from 'react';
-
-// El input REAL confirmado en vivo (no son 5 booleanos separados, es
-// UNO numérico): 0 = normal, 1 = feliz, 2 = triste, 3 = asustado,
-// 4 = sorprendido.
-const EMOCION_A_NUMERO = {
-  idle: 0,
-  happy: 1,
-  sad: 2,
-  scared: 3,
-  surprised: 4,
-};
 
 export default function ToduAvatar({ emotion = 'idle', mensaje = '', size = 110, zoom = 1.3 }) {
   const { rive, RiveComponent } = useRive({
     src: '/toduoptimo.riv',
     stateMachines: 'State Machine 1',
     autoplay: true,
-    layout: new Layout({
-      fit: Fit.Contain,
-      alignment: Alignment.Center,
-    }),
+    layout: new Layout({ fit: Fit.Contain, alignment: Alignment.Center }),
   });
 
-  const expressionsInput = useStateMachineInput(rive, 'State Machine 1', 'Expressions');
-  const isTrackingInput = useStateMachineInput(rive, 'State Machine 1', 'IsTracking');
-  const seasonalInput = useStateMachineInput(rive, 'State Machine 1', 'Seasonal');
-
-  // Prende el seguimiento de ojos con el mouse una sola vez.
+  // Efecto Maestro: Controla los inputs descubiertos por la ingeniería inversa
   useEffect(() => {
-    if (isTrackingInput) isTrackingInput.value = true;
-    if (seasonalInput) seasonalInput.value = 0; // sin accesorio de temporada por defecto
-  }, [isTrackingInput, seasonalInput]);
+    if (!rive) return;
+    
+    try {
+      // Obtenemos los inputs directamente de la máquina de estados
+      const inputs = rive.stateMachineInputs('State Machine 1');
+      
+      // 1. Activar que nos siga con la mirada
+      const isTracking = inputs.find(i => i.name === 'IsTracking');
+      if (isTracking) isTracking.value = true;
 
-  // La "perilla" numérica de las emociones.
-  useEffect(() => {
-    if (!rive || !expressionsInput) return;
-    expressionsInput.value = EMOCION_A_NUMERO[emotion] ?? 0;
-  }, [emotion, rive, expressionsInput]);
+      // 2. Controlar la perilla de emociones (Expressions)
+      const expressions = inputs.find(i => i.name === 'Expressions');
+      if (expressions) {
+        // Mapeamos los nombres de texto a los números que Rive espera
+        const EMOCION_A_NUMERO = {
+          'idle': 0, 'normal smile_face': 0,
+          'happy': 1, 'super happy_face': 1,
+          'sad': 2, 'sad_face': 2,
+          'scared': 3, 'scared_face': 3,
+          'surprised': 4, 'surprised_face': 4
+        };
+        // Asignamos el valor numérico, por defecto 0 (idle)
+        expressions.value = EMOCION_A_NUMERO[emotion] ?? 0;
+      }
+    } catch (e) {
+      // Si Rive aún se está preparando, ignoramos el error
+    }
+  }, [rive, emotion]);
 
   return (
     <div className="relative inline-flex flex-col items-center justify-center">
-      {/* Globo de diálogo */}
+      
+      {/* GLOBO DE DIÁLOGO */}
       {mensaje && (
         <div className="absolute -top-10 left-1/2 -translate-x-1/2 z-50 animate-in fade-in zoom-in-95 slide-in-from-bottom-2 duration-300 pointer-events-none">
           <div className="bg-white text-violet-900 text-xs font-black px-4 py-2.5 rounded-2xl rounded-bl-sm shadow-[0_10px_25px_rgba(139,92,246,0.3)] whitespace-nowrap border-2 border-violet-100 relative">
             {mensaje}
+            {/* Colita del globo */}
             <div className="absolute -bottom-[8px] left-2 w-0 h-0 border-t-[8px] border-t-white border-r-[8px] border-r-transparent border-l-[8px] border-l-transparent drop-shadow-sm"></div>
           </div>
         </div>
       )}
 
-      {/* Avatar Rive */}
+      {/* AVATAR RIVE */}
       <div
         style={{ width: size, height: size }}
         className="relative flex justify-center items-center overflow-hidden"
@@ -63,6 +66,7 @@ export default function ToduAvatar({ emotion = 'idle', mensaje = '', size = 110,
           </div>
         </div>
       </div>
+      
     </div>
   );
 }
