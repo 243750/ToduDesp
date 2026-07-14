@@ -1,9 +1,14 @@
 'use client';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { calculatePoints, isBust, getScoringIndices, META_PUNTOS } from '../logic';
+import { api, ApiError } from '../../../lib/api';
+import useGamificacion from '../../gamificacion/hooks/useGamificacion';
+import useRobotState from '../../robot/hooks/useRobotState';
+
+const APUESTA_MINIMA = 10;
+const APUESTA_MAXIMA_ABSOLUTA = 5000;
 
 export default function useDadosGame() {
-  // Estados del Juego
   const [dice, setDice] = useState(Array(6).fill({ value: null, locked: false, selected: false }));
   const [turnScore, setTurnScore] = useState(0);
   const [playerScore, setPlayerScore] = useState(0);
@@ -13,31 +18,101 @@ export default function useDadosGame() {
 
   const [isRolling, setIsRolling] = useState(false);
   const [message, setMessage] = useState('');
-
-  // Estado para controlar la emoción del avatar de Todú en tiempo real
   const [toduEmotion, setToduEmotion] = useState('idle');
 
-  // --- Prototipo de barra de apuesta de XP (solo visual por ahora, NO está
-  // conectada a /xp/atomic ni a ningún saldo real — es para ver cómo se
-  // vería y se sentiría antes de tocar el motor de XP real). ---
-  const APUESTA_MAX_DEMO = 100; // tope de ejemplo; en real sería el XP del usuario
-  const [apuestaXP, setApuestaXP] = useState(20);
+  const { progreso, refrescar: refrescarGamificacion } = useGamificacion();
+  const { refrescar: refrescarRobot } = useRobotState(); 
+
+  const xpDisponible = progreso?.xpDisponible ?? 0;
+  const apuestaMaxima = Math.max(APUESTA_MINIMA, Math.min(APUESTA_MAXIMA_ABSOLUTA, xpDisponible));
+
+  const [apuestaXP, setApuestaXP] = useState(APUESTA_MINIMA);
+  const [partidaId, setPartidaId] = useState(null);
   const [apuestaConfirmada, setApuestaConfirmada] = useState(false);
+  const [premioSiGanas, setPremioSiGanas] = useState(0);
+  const [cargandoApuesta, setCargandoApuesta] = useState(false);
+  const [errorApuesta, setErrorApuesta] = useState(null);
+  const [resolviendoApuesta, setResolviendoApuesta] = useState(false);
+  const [resultadoApuesta, setResultadoApuesta] = useState(null);
+  const [verificandoPartida, setVerificandoPartida] = useState(true);
 
-  // Todú reacciona al tamaño de la apuesta mientras el jugador todavía
-  // no confirma: se ríe si apuestas muy poco, se asombra si apuestas mucho.
+  // 1. Verificar partida activa
   useEffect(() => {
-    if (apuestaConfirmada) return;
-    if (apuestaXP <= APUESTA_MAX_DEMO * 0.15) setToduEmotion('happy');
-    else if (apuestaXP >= APUESTA_MAX_DEMO * 0.7) setToduEmotion('surprised');
-    else setToduEmotion('idle');
-  }, [apuestaXP, apuestaConfirmada]);
+    let cancelled = false;
+    api.get('/juegos/farkle/activa')
+      .then((data) => {
+        if (cancelled) return;
+        if (data.activa && data.partida) {
+          setPartidaId(data.partida.partidaId);
+          setApuestaXP(data.partida.apuesta);
+          setPremioSiGanas(data.partida.apuesta * 2);
+          setApuestaConfirmada(true);
+        }
+      })
+      .catch(() => {})
+      .finally(() => { if (!cancelled) setVerificandoPartida(false); });
+    return () => { cancelled = true; };
+  }, []);
 
-  // === TURNO DEL JUGADOR ===
+  // 2. REACCIÓN DE TODÚ A LA APUESTA (Arreglado)
+  useEffect(() => {
+    if (apuestaConfirmada || isRolling || winner) return;
+    
+    const porcentajeApuesta = apuestaMaxima > 0 ? apuestaXP / apuestaMaxima : 0;
+    
+    if (apuestaXP <= 20 || porcentajeApuesta <= 0.25) {
+      setToduEmotion('happy'); // Se ríe de tu apuesta baja
+    } else if (apuestaXP >= 100 || porcentajeApuesta >= 0.75) {
+      setToduEmotion('surprised'); // Se asombra de la apuesta alta
+    } else {
+      setToduEmotion('idle');
+    }
+  }, [apuestaXP, apuestaConfirmada, apuestaMaxima, isRolling, winner]);
+
+  const confirmarApuesta = useCallback(async (userId) => {
+    setErrorApuesta(null);
+    setCargandoApuesta(true);
+    try {
+      const data = await api.post('/juegos/farkle/apostar', { apuesta: apuestaXP });
+      setPartidaId(data.partidaId);
+      setPremioSiGanas(data.premioSiGanas);
+      setApuestaConfirmada(true);
+      if (userId) await refrescarGamificacion(userId);
+    } catch (err) {
+      // Capturamos el mensaje exacto de M (ej. "Necesitas nivel 3")
+      if (err instanceof ApiError) {
+        setErrorApuesta(err.message || 'Error del servidor.');
+      } else {
+        setErrorApuesta('Error de conexión.');
+      }
+    } finally {
+      setCargandoApuesta(false);
+    }
+  }, [apuestaXP, refrescarGamificacion]);
+
+  const resolverApuesta = useCallback(async (gano, userId) => {
+    if (!partidaId) return;
+    setResolviendoApuesta(true);
+    try {
+      const data = await api.post('/juegos/farkle/resolver', {
+        partidaId,
+        resultado: gano ? 'ganada' : 'perdida',
+      });
+      setResultadoApuesta({ gano, premio: data.premio ?? 0, xpDisponible: data.xpDisponible });
+      if (userId) await refrescarGamificacion(userId);
+      refrescarRobot();
+    } catch (err) {
+      setResultadoApuesta({ gano, premio: gano ? apuestaXP * 2 : 0, xpDisponible: null });
+    } finally {
+      setResolviendoApuesta(false);
+      setPartidaId(null);
+    }
+  }, [partidaId, apuestaXP, refrescarGamificacion, refrescarRobot]);
+
   const rollDice = () => {
     setIsRolling(true);
     setMessage('');
-    setToduEmotion('idle'); // Reseteamos emoción
+    setToduEmotion('surprised'); // Sorprendido por el suspenso de los dados
 
     const currentSelectedValues = dice.filter((d) => d.selected && !d.locked).map((d) => d.value);
     const newPoints = calculatePoints(currentSelectedValues);
@@ -58,8 +133,10 @@ export default function useDadosGame() {
 
       if (isBust(newDice.filter((d) => !d.locked).map((d) => d.value))) {
         setMessage('¡ZOUNDS! Perdiste el turno.');
-        setToduEmotion('happy'); // Todú se ríe de que perdiste
+        setToduEmotion('happy'); // Se burla de ti si sacas Zounds
         setTimeout(() => { passTurn('todu'); }, 2000);
+      } else {
+        setToduEmotion('idle');
       }
     }, 500);
   };
@@ -86,7 +163,6 @@ export default function useDadosGame() {
     setActivePlayer(nextPlayer);
   };
 
-  // === INTELIGENCIA ARTIFICIAL DE TODÚ ===
   useEffect(() => {
     let isMounted = true;
     if (activePlayer !== 'todu' || winner) return;
@@ -119,8 +195,8 @@ export default function useDadosGame() {
 
         const unlockedVals = activeDice.filter((d) => !d.locked).map((d) => d.value);
         if (isBust(unlockedVals)) {
-          setMessage('¡Todú sacó ZOUNDS y pierde el turno!');
-          setToduEmotion('sad'); // Todú se sorprende/entristece por perder turno
+          setMessage('¡Todú sacó ZOUNDS!');
+          setToduEmotion('sad'); // Todú se pone TRISTE si él saca Zounds
           await new Promise((r) => setTimeout(r, 2500));
           if (isMounted) {
             setToduEmotion('idle');
@@ -136,7 +212,7 @@ export default function useDadosGame() {
 
         const selectedVals = activeDice.filter((d) => d.selected && !d.locked).map((d) => d.value);
         currentTurnScore += calculatePoints(selectedVals);
-        setToduEmotion('happy'); // Se pone feliz porque sumó puntos
+        
         await updateUI(activeDice, currentTurnScore, 1000);
 
         const unlockedCount = activeDice.filter((d) => !d.locked && !d.selected).length;
@@ -150,7 +226,6 @@ export default function useDadosGame() {
           }
           return;
         }
-        setToduEmotion('idle');
       }
     };
 
@@ -158,16 +233,16 @@ export default function useDadosGame() {
     return () => { isMounted = false; };
   }, [activePlayer, winner, toduScore]);
 
-  // === COMPROBAR GANADOR ===
+  // 3. REACCIÓN FINAL (Arreglado)
   useEffect(() => {
-    if (playerScore >= META_PUNTOS) {
-      setWinner('Jorge');
-      setToduEmotion('sad');
-    } else if (toduScore >= META_PUNTOS) {
+    if (playerScore >= META_PUNTOS && !winner) {
+      setWinner('Jugador');
+      setToduEmotion('sad'); // Tú ganas = Todú pierde y se pone triste
+    } else if (toduScore >= META_PUNTOS && !winner) {
       setWinner('Todú');
-      setToduEmotion('surprised');
+      setToduEmotion('happy'); // Todú gana = se burla de ti
     }
-  }, [playerScore, toduScore]);
+  }, [playerScore, toduScore, winner]);
 
   const jugarRevancha = () => {
     setPlayerScore(0);
@@ -175,7 +250,11 @@ export default function useDadosGame() {
     setWinner(null);
     setActivePlayer('player');
     setApuestaConfirmada(false);
-    setApuestaXP(20);
+    setApuestaXP(APUESTA_MINIMA);
+    setPartidaId(null);
+    setResultadoApuesta(null);
+    setErrorApuesta(null);
+    setToduEmotion('idle');
   };
 
   const selectedValues = dice.filter((d) => d.selected && !d.locked).map((d) => d.value);
@@ -184,27 +263,10 @@ export default function useDadosGame() {
   const isFirstRoll = dice.every((d) => d.value === null);
 
   return {
-    META_PUNTOS,
-    APUESTA_MAX_DEMO,
-    dice,
-    turnScore,
-    playerScore,
-    toduScore,
-    activePlayer,
-    winner,
-    isRolling,
-    message,
-    toduEmotion,
-    apuestaXP,
-    setApuestaXP,
-    apuestaConfirmada,
-    setApuestaConfirmada,
-    rollDice,
-    toggleDieSelection,
-    bankPoints,
-    jugarRevancha,
-    currentSelectionPoints,
-    canRollOrBank,
-    isFirstRoll,
+    META_PUNTOS, dice, turnScore, playerScore, toduScore, activePlayer, winner, isRolling, message,
+    toduEmotion, rollDice, toggleDieSelection, bankPoints, jugarRevancha, currentSelectionPoints,
+    canRollOrBank, isFirstRoll, xpDisponible, apuestaMinima: APUESTA_MINIMA, apuestaMaxima,
+    apuestaXP, setApuestaXP, apuestaConfirmada, confirmarApuesta, cargandoApuesta, errorApuesta,
+    premioSiGanas, resolviendoApuesta, resultadoApuesta, verificandoPartida, resolverApuesta
   };
 }

@@ -1,42 +1,32 @@
 'use client';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import ToduAvatar from '../../../components/ToduAvatar';
 import useDadosGame from '../../../features/dados/hooks/useDadosGame';
 import DieFace from '../../../features/dados/components/DieFace';
+import { useAuth } from '../../../context/AuthContext';
 
 export default function DadosPage() {
   const [showHelp, setShowHelp] = useState(false);
+  const { user } = useAuth(); 
 
   const {
-    META_PUNTOS,
-    APUESTA_MAX_DEMO,
-    dice,
-    turnScore,
-    playerScore,
-    toduScore,
-    activePlayer,
-    winner,
-    isRolling,
-    message,
-    toduEmotion,
-    apuestaXP,
-    setApuestaXP,
-    apuestaConfirmada,
-    setApuestaConfirmada,
-    rollDice,
-    toggleDieSelection,
-    bankPoints,
-    jugarRevancha,
-    currentSelectionPoints,
-    canRollOrBank,
-    isFirstRoll,
+    META_PUNTOS, dice, turnScore, playerScore, toduScore, activePlayer, winner, isRolling, message,
+    toduEmotion, rollDice, toggleDieSelection, bankPoints, jugarRevancha, currentSelectionPoints,
+    canRollOrBank, isFirstRoll, xpDisponible, apuestaMinima, apuestaMaxima, apuestaXP, setApuestaXP,
+    apuestaConfirmada, confirmarApuesta, cargandoApuesta, errorApuesta, premioSiGanas,
+    resolviendoApuesta, resultadoApuesta, verificandoPartida, resolverApuesta
   } = useDadosGame();
+
+  useEffect(() => {
+    if (winner && !resultadoApuesta && !resolviendoApuesta) {
+        resolverApuesta(winner === 'Jugador', user?.id);
+    }
+  }, [winner, resultadoApuesta, resolviendoApuesta, resolverApuesta, user]);
 
   return (
     <div className="min-h-screen bg-[#050505] text-slate-200 font-sans pb-10 overflow-x-hidden relative selection:bg-cyan-500 selection:text-white">
-
-      {/* Fondo Neón */}
+      {/* Fondo Matrix */}
       <div className="fixed inset-0 pointer-events-none z-0 opacity-10" style={{ backgroundImage: `linear-gradient(rgba(6, 182, 212, 0.4) 1px, transparent 1px), linear-gradient(90deg, rgba(6, 182, 212, 0.4) 1px, transparent 1px)`, backgroundSize: '40px 40px', backgroundPosition: 'center center' }}>
         <div className="absolute inset-0 bg-gradient-to-t from-[#050505] via-transparent to-[#050505]/80"></div>
       </div>
@@ -54,72 +44,88 @@ export default function DadosPage() {
       </header>
 
       <main className="relative z-10 max-w-md mx-auto px-6 flex flex-col mt-6">
-
-        {/* Marcadores Principales (Versus) — simétricos, sin avatar adentro */}
+        
+        {/* Marcador */}
         <div className="flex justify-between items-center mb-6 gap-3">
-          {/* Jugador */}
           <div className={`flex-1 rounded-2xl p-3 text-center border transition-all ${activePlayer === 'player' ? 'bg-cyan-900/40 border-cyan-400 shadow-[0_0_15px_rgba(6,182,212,0.3)]' : 'bg-black/40 border-cyan-500/20'}`}>
             <p className="text-[10px] text-cyan-300/70 uppercase tracking-widest font-bold mb-1">Tú</p>
             <p className="text-2xl font-black text-white">{playerScore}</p>
           </div>
-
           <div className="text-cyan-600 font-black text-xl italic opacity-50 px-2">VS</div>
-
           <div className={`flex-1 rounded-2xl p-3 text-center border transition-all ${activePlayer === 'todu' ? 'bg-purple-900/40 border-purple-400 shadow-[0_0_15px_rgba(168,85,247,0.3)]' : 'bg-black/40 border-purple-500/20'}`}>
             <p className="text-[10px] text-purple-300/70 uppercase tracking-widest font-bold mb-1">Todú</p>
             <p className="text-2xl font-black text-white">{toduScore}</p>
           </div>
         </div>
 
-        {/* Todú, solo y sin marco, reaccionando arriba de la meta */}
-        <div className="flex justify-center -mb-2">
-          <div className="w-32 h-32">
-            <ToduAvatar emotion={toduEmotion} size={132} />
+        {/* TODÚ GIGANTE PASANDO LA EMOCIÓN */}
+        <div className="flex justify-center -mb-8 z-20 relative">
+          <div className="w-48 h-48 drop-shadow-2xl">
+            <ToduAvatar emotion={toduEmotion} size={192} zoom={1.4} />
           </div>
         </div>
 
-        <div className="text-center mb-4">
-          <p className="text-[10px] text-slate-500 font-black uppercase tracking-widest">Meta: {META_PUNTOS} PTS</p>
+        <div className="text-center mb-4 relative z-30">
+          <p className="text-[10px] text-slate-500 font-black uppercase tracking-widest bg-[#050505] inline-block px-4 py-1 rounded-full border border-slate-800">Meta: {META_PUNTOS} PTS</p>
         </div>
 
-        {/* Barra de apuesta de XP — PROTOTIPO VISUAL, sin conexión real a XP todavía */}
-        {isFirstRoll && !apuestaConfirmada ? (
-          <div className="bg-black/60 border-2 border-amber-500/30 rounded-3xl p-5 mb-6">
-            <div className="flex justify-between items-center mb-3">
+        {/* Slider de Apuesta */}
+        {verificandoPartida ? (
+          <div className="text-center text-xs text-slate-500 font-bold uppercase tracking-widest mb-6">
+            Revisando si tienes una partida en curso...
+          </div>
+        ) : isFirstRoll && !apuestaConfirmada ? (
+          <div className="bg-black/60 border-2 border-amber-500/30 rounded-3xl p-5 mb-6 relative z-30">
+            <div className="flex justify-between items-center mb-1">
               <p className="text-[10px] text-amber-400 font-black uppercase tracking-widest">Apuesta tu XP</p>
               <p className="text-xl font-black text-amber-400">{apuestaXP} XP</p>
             </div>
-            <input
-              type="range"
-              min={0}
-              max={APUESTA_MAX_DEMO}
-              step={5}
-              value={apuestaXP}
-              onChange={(e) => setApuestaXP(Number(e.target.value))}
-              className="w-full accent-amber-500"
-            />
-            <div className="flex justify-between text-[9px] text-slate-500 font-bold uppercase tracking-wider mt-1 mb-4">
-              <span>0</span>
-              <span>{APUESTA_MAX_DEMO} (todo)</span>
-            </div>
-            <button
-              onClick={() => setApuestaConfirmada(true)}
-              className="w-full py-3 rounded-full font-black uppercase tracking-widest text-sm bg-amber-500 hover:bg-amber-400 text-black transition-all active:scale-95"
-            >
-              Confirmar apuesta
-            </button>
+            <p className="text-[10px] text-slate-500 font-bold mb-3">Cartera disponible: {xpDisponible || 0} XP</p>
+
+            {xpDisponible < apuestaMinima ? (
+              <p className="text-xs font-bold text-rose-400 bg-rose-500/10 border border-rose-500/20 rounded-xl p-3 text-center">
+                No tienes XP suficiente para apostar (mínimo {apuestaMinima} XP). Completa tareas para ganar más.
+              </p>
+            ) : (
+              <>
+                <input
+                  type="range"
+                  min={apuestaMinima}
+                  max={apuestaMaxima}
+                  step={5}
+                  value={apuestaXP}
+                  onChange={(e) => setApuestaXP(Number(e.target.value))}
+                  className="w-full accent-amber-500"
+                />
+                <div className="flex justify-between text-[9px] text-slate-500 font-bold uppercase tracking-wider mt-1 mb-4">
+                  <span>{apuestaMinima}</span>
+                  <span>{apuestaMaxima} (todo)</span>
+                </div>
+                {errorApuesta && (
+                  <p className="text-xs font-bold text-rose-400 bg-rose-500/10 border border-rose-500/20 rounded-xl p-3 text-center mb-3">
+                    {errorApuesta}
+                  </p>
+                )}
+                <button
+                  onClick={() => confirmarApuesta(user?.id)}
+                  disabled={cargandoApuesta}
+                  className="w-full py-3 rounded-full font-black uppercase tracking-widest text-sm bg-amber-500 hover:bg-amber-400 disabled:opacity-50 text-black transition-all active:scale-95"
+                >
+                  {cargandoApuesta ? 'Apostando...' : `Apostar y jugar (premio: ${apuestaXP * 2} XP)`}
+                </button>
+              </>
+            )}
           </div>
         ) : apuestaConfirmada ? (
-          <div className="flex justify-center mb-6">
+          <div className="flex justify-center mb-6 relative z-30">
             <span className="text-[10px] font-black uppercase tracking-widest text-amber-400 bg-amber-500/10 border border-amber-500/20 px-4 py-1.5 rounded-full">
-              Apuesta activa: {apuestaXP} XP
+              Apuesta activa: {apuestaXP} XP · Premio si ganas: {premioSiGanas} XP
             </span>
           </div>
         ) : null}
 
-        {/* Zona de Dados */}
-        <div className={`bg-black/60 border-2 rounded-3xl p-6 min-h-[280px] flex flex-col justify-center items-center relative transition-colors ${activePlayer === 'player' ? 'border-cyan-500/30 shadow-[0_0_30px_rgba(6,182,212,0.05)]' : 'border-purple-500/30 shadow-[0_0_30px_rgba(168,85,247,0.05)]'}`}>
-
+        {/* Tablero de Dados */}
+        <div className={`bg-black/60 border-2 rounded-3xl p-6 min-h-[280px] flex flex-col justify-center items-center relative transition-colors z-10 ${activePlayer === 'player' ? 'border-cyan-500/30 shadow-[0_0_30px_rgba(6,182,212,0.05)]' : 'border-purple-500/30 shadow-[0_0_30px_rgba(168,85,247,0.05)]'}`}>
           <div className="absolute top-4 left-0 w-full text-center">
             {message ? (
               <span className="text-xs font-black uppercase tracking-widest text-white animate-pulse bg-black/80 px-4 py-1 rounded-full border border-white/10">{message}</span>
@@ -165,13 +171,13 @@ export default function DadosPage() {
           )}
         </div>
 
-        {/* Controles de Acción */}
-        <div className={`mt-8 flex flex-col gap-4 transition-opacity duration-500 ${activePlayer === 'player' ? 'opacity-100' : 'opacity-30 pointer-events-none'}`}>
+        {/* Botones de Acción */}
+        <div className={`mt-8 flex flex-col gap-4 transition-opacity duration-500 relative z-20 ${activePlayer === 'player' ? 'opacity-100' : 'opacity-30 pointer-events-none'}`}>
           <button
             onClick={rollDice}
-            disabled={(!isFirstRoll && !canRollOrBank && !message) || (isFirstRoll && !apuestaConfirmada)}
+            disabled={verificandoPartida || (!isFirstRoll && !canRollOrBank && !message) || (isFirstRoll && !apuestaConfirmada)}
             className={`w-full py-4 rounded-full font-black uppercase tracking-widest transition-all ${
-              (!isFirstRoll && !canRollOrBank && !message) || (isFirstRoll && !apuestaConfirmada)
+              verificandoPartida || (!isFirstRoll && !canRollOrBank && !message) || (isFirstRoll && !apuestaConfirmada)
                 ? 'bg-slate-800 text-slate-500'
                 : 'bg-cyan-600 hover:bg-cyan-500 text-white shadow-[0_0_20px_rgba(6,182,212,0.5)] active:scale-95'
             }`}
@@ -192,104 +198,99 @@ export default function DadosPage() {
           </button>
         </div>
 
-        {/* Modal de Victoria/Derrota con Reacciones de Todú */}
+        {/* Modal de Victoria */}
         {winner && (
           <div className="fixed inset-0 z-50 bg-[#050505]/95 backdrop-blur-md flex flex-col items-center justify-center p-6 text-center border-t-4 border-cyan-500">
-
-             {/* Rive Avatar en lugar de emojis */}
              <div className="mb-6 bg-[#0b1120] rounded-full p-4 border border-white/10 shadow-[0_0_30px_rgba(6,182,212,0.3)]">
-               <ToduAvatar
-                 emotion={winner === 'Jorge' ? 'surprised' : 'happy'}
-                 size={100}
-               />
+               <ToduAvatar emotion={winner === 'Jugador' ? 'scared' : 'happy'} size={180} zoom={1.5} />
              </div>
-
-             <h2 className={`text-4xl font-black tracking-widest mb-4 drop-shadow-[0_0_15px_currentColor] ${winner === 'Jorge' ? 'text-cyan-400' : 'text-purple-400'}`}>
-                {winner === 'Jorge' ? '¡GANASTE!' : 'TODÚ GANA'}
+             <h2 className={`text-4xl font-black tracking-widest mb-4 drop-shadow-[0_0_15px_currentColor] ${winner === 'Jugador' ? 'text-cyan-400' : 'text-purple-400'}`}>
+                {winner === 'Jugador' ? '¡GANASTE!' : 'TODÚ GANA'}
              </h2>
-
-             <p className="text-slate-300 font-medium mb-2">
-               Marcador Final
-             </p>
-             <p className="text-white text-2xl font-black mb-10 bg-white/10 px-6 py-2 rounded-2xl border border-white/20">
+             <p className="text-slate-300 font-medium mb-2">Marcador Final</p>
+             <p className="text-white text-2xl font-black mb-6 bg-white/10 px-6 py-2 rounded-2xl border border-white/20">
                Tú: {playerScore} <span className="text-slate-500 mx-2">|</span> Todú: {toduScore}
              </p>
+
+             {resolviendoApuesta ? (
+               <p className="text-xs text-slate-500 font-bold uppercase tracking-widest mb-6 animate-pulse">
+                 Sincronizando XP Total...
+               </p>
+             ) : resultadoApuesta ? (
+               <div className={`mb-6 p-4 rounded-2xl border w-full max-w-xs mx-auto ${
+                 resultadoApuesta.gano ? 'bg-emerald-500/10 border-emerald-500/20' : 'bg-rose-500/10 border-rose-500/20'
+               }`}>
+                 <p className={`text-sm font-black uppercase tracking-widest mb-2 ${resultadoApuesta.gano ? 'text-emerald-400' : 'text-rose-400'}`}>
+                   {resultadoApuesta.gano ? `+ ${resultadoApuesta.premio} XP GANADOS` : 'APUESTA PERDIDA'}
+                 </p>
+                 <p className="text-[10px] text-slate-400 uppercase tracking-widest font-bold">
+                   Tu Nueva Cartera: <span className="text-white">{resultadoApuesta.xpDisponible ?? 0} XP</span>
+                 </p>
+               </div>
+             ) : null}
 
              <button onClick={jugarRevancha} className="bg-cyan-600 text-white font-black uppercase tracking-widest px-10 py-4 rounded-full shadow-[0_0_25px_rgba(6,182,212,0.6)] mb-6 border border-cyan-400 active:scale-95 transition-transform">
                Jugar Revancha
              </button>
-
              <Link href="/arcade" className="text-slate-400 hover:text-white text-xs font-bold uppercase tracking-widest transition-colors">Volver al Lobby</Link>
           </div>
         )}
       </main>
-
-      {/* Modal de Ayuda */}
+      
+      {/* Ayuda Modal Ampliada */}
       {showHelp && (
         <div className="fixed inset-0 z-50 bg-[#050505]/95 backdrop-blur-md flex flex-col items-center justify-center p-6">
-          <div className="bg-[#111827] border border-cyan-500/30 rounded-3xl p-6 w-full max-w-sm relative shadow-[0_0_30px_rgba(6,182,212,0.2)]">
-            <button onClick={() => setShowHelp(false)} className="absolute top-4 right-4 text-slate-400 hover:text-white">
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
+          <div className="bg-[#111827] border border-cyan-500/30 rounded-3xl p-6 w-full max-w-sm relative shadow-[0_0_30px_rgba(6,182,212,0.2)] max-h-[90vh] overflow-y-auto">
+            <button onClick={() => setShowHelp(false)} className="absolute top-4 right-4 text-slate-400 hover:text-white bg-white/5 p-1.5 rounded-full">
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
             </button>
-
-            <div className="flex items-center gap-4 mb-6 border-b border-white/5 pb-4">
-              <div className="w-14 h-14 flex-shrink-0 flex items-center justify-center">
-                <svg className="w-full h-full drop-shadow-[0_0_12px_rgba(255,255,255,0.8)]" viewBox="0 0 100 100" fill="none">
-                  <path d="M75 45 C85 40, 90 60, 80 65" stroke="white" strokeWidth="6" strokeLinecap="round"/>
-                  <ellipse cx="50" cy="60" rx="30" ry="28" fill="white" />
-                  <line x1="50" y1="32" x2="50" y2="15" stroke="white" strokeWidth="5" strokeLinecap="round" />
-                  <circle cx="50" cy="12" r="4" fill="#06B6D4" />
-                  <path d="M35 55 Q40 48 45 55" stroke="#06B6D4" strokeWidth="4" strokeLinecap="round" />
-                  <path d="M55 55 Q60 48 65 55" stroke="#06B6D4" strokeWidth="4" strokeLinecap="round" />
-                </svg>
+            <div className="flex flex-col items-center text-center mb-5 border-b border-white/5 pb-5">
+              <div className="w-14 h-14 bg-cyan-900 border border-cyan-500 rounded-full flex items-center justify-center text-cyan-400 mb-3 shadow-[0_0_15px_rgba(6,182,212,0.3)]">
+                <span className="font-black text-2xl">?</span>
               </div>
-              <div>
-                <h3 className="text-cyan-400 font-black tracking-widest uppercase text-sm">Todú te explica</h3>
-                <p className="text-xs text-slate-400 font-medium mt-0.5">El primero en {META_PUNTOS} gana</p>
-              </div>
+              <h3 className="text-cyan-400 font-black tracking-widest uppercase text-lg">Reglas de Farkle</h3>
+              <p className="text-xs text-slate-400 font-medium mt-1">El primero en {META_PUNTOS} PTS gana la apuesta.</p>
             </div>
-
-            <div className="space-y-4 text-sm text-slate-300 font-medium">
-              <p>Tira los 6 dados. Para seguir tirando, <span className="text-white font-bold">selecciona dados que sumen puntos</span>.</p>
-
-              <ul className="bg-black/50 rounded-xl p-4 border border-white/5 space-y-3">
-                <li className="flex justify-between items-center">
-                  <span className="flex items-center gap-2">
-                    Dado con
-                    <div className="w-4 h-4 rounded-md border border-cyan-500/50 flex items-center justify-center bg-slate-900">
-                      <div className="w-1.5 h-1.5 bg-cyan-400 rounded-full shadow-[0_0_3px_currentColor]"></div>
-                    </div>
-                    (1)
-                  </span>
-                  <span className="font-bold text-white">100 pts</span>
+            
+            <div className="space-y-5 text-sm text-slate-300 font-medium">
+              <p>Tira los 6 dados. Para sumar puntos y seguir tirando, <span className="text-white font-bold">debes seleccionar dados válidos</span>.</p>
+              
+              <div className="bg-black/50 rounded-xl p-4 border border-white/10 space-y-3">
+                <h4 className="text-[10px] text-cyan-500 font-black uppercase tracking-widest border-b border-cyan-500/20 pb-2">Tabla de Puntuación</h4>
+                <li className="flex justify-between items-center text-xs">
+                  <span>Cada (1) individual</span> <span className="font-bold text-white">100 pts</span>
                 </li>
-
-                {/* Corrección del Dado 5 */}
-                <li className="flex justify-between items-center">
-                  <span className="flex items-center gap-2">
-                    Dado con
-                    <div className="w-4 h-4 rounded-md border border-cyan-500/50 bg-slate-900 p-0.5 grid grid-cols-3 grid-rows-3 place-items-center">
-                      <div className="w-0.5 h-0.5 bg-cyan-400 rounded-full"></div><div></div><div className="w-0.5 h-0.5 bg-cyan-400 rounded-full"></div>
-                      <div></div><div className="w-0.5 h-0.5 bg-cyan-400 rounded-full"></div><div></div>
-                      <div className="w-0.5 h-0.5 bg-cyan-400 rounded-full"></div><div></div><div className="w-0.5 h-0.5 bg-cyan-400 rounded-full"></div>
-                    </div>
-                    (5)
-                  </span>
-                  <span className="font-bold text-white">50 pts</span>
+                <li className="flex justify-between items-center text-xs">
+                  <span>Cada (5) individual</span> <span className="font-bold text-white">50 pts</span>
                 </li>
+                <li className="flex justify-between text-xs pt-2 border-t border-white/5">
+                  <span>Trío de (1)</span> <span className="font-bold text-yellow-400">1000 pts</span>
+                </li>
+                <li className="flex justify-between text-xs">
+                  <span>Otros Tríos (ej. tres 4)</span> <span className="font-bold text-white">Cara x 100</span>
+                </li>
+                <li className="flex justify-between text-xs text-slate-400 italic">
+                  <span>(ej. Trío de 4 = 400 pts)</span>
+                </li>
+              </div>
 
-                <li className="flex justify-between pt-1 border-t border-white/10"><span>Trío de 1s</span> <span className="font-bold text-yellow-400">1000 pts</span></li>
-                <li className="flex justify-between"><span>Otros Tríos (ej. 4-4-4)</span> <span className="font-bold text-white">Valor x 100</span></li>
-              </ul>
+              <div className="bg-rose-950/30 rounded-xl p-4 border border-rose-500/20">
+                <h4 className="text-[10px] text-rose-400 font-black uppercase tracking-widest mb-2 flex items-center gap-2">
+                  <span>⚠️</span> La Regla ZOUNDS (Farkle)
+                </h4>
+                <p className="text-xs leading-relaxed text-rose-200/80">
+                  Si tiras los dados y <span className="text-white font-bold">ninguno suma puntos</span>, has sacado ZOUNDS. 
+                  Pierdes tu turno inmediatamente y todos los puntos que habías acumulado en esa ronda se esfuman.
+                </p>
+              </div>
 
-              <p className="text-rose-400 font-bold bg-rose-500/10 p-3 rounded-xl border border-rose-500/20 text-xs">
-                ⚠️ Si tiras y no sale ningún 1, 5 o trío, pierdes los puntos del turno (ZOUNDS) y le toca a Todú.
-              </p>
+              <button onClick={() => setShowHelp(false)} className="w-full py-3 bg-cyan-600 hover:bg-cyan-500 text-white font-black rounded-xl transition-colors text-xs tracking-wider uppercase mt-2">
+                ¡A Jugar!
+              </button>
             </div>
           </div>
         </div>
       )}
-
     </div>
   );
 }
