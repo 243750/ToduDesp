@@ -1,0 +1,166 @@
+'use client';
+import DecoracionSVG from './DecoracionSVG';
+import { CATALOGO_DECORACIONES } from './catalogo';
+import ToduAvatar from '../ToduAvatar';
+
+/**
+ * El "Cuarto de Todú" como una escena real. Cada categoría tiene su
+ * propia zona fija, separadas para que nada se encime:
+ * - Ambiente  → guirnalda de luces, tira superior de la pared
+ * - Pared     → cuadros, ventana, reloj — fila de 4 espacios
+ * - Aire      → dron, flotando a un lado
+ * - Trofeos   → vitrina con color propio, detrás de Todú
+ * - Mascotas  → sentadas a los pies de Todú
+ * - Accesorios → buró con color madera, esquina inferior
+ * - Piso      → alfombra (fondo) y planta, a nivel del suelo
+ */
+export default function EscenaCuartoTodu({ compradas, emocionActual, mensaje, onCosquillas }) {
+  const itemsComprados = CATALOGO_DECORACIONES.filter((it) => compradas.includes(it.id));
+  const por = (cat) => itemsComprados.filter((it) => it.categoria === cat);
+
+  const trofeos = por('Trofeos');
+  const mascotas = por('Mascotas');
+  const pared = por('Pared');
+  const drones = por('Aire');
+  const accesorios = por('Accesorios');
+  const piso = por('Piso');
+  const ambiente = por('Ambiente');
+
+  const alfombra = piso.find((it) => it.id === 'alfombra_decorativa');
+  const planta = piso.find((it) => it.id === 'planta_maceta');
+  const guirnalda = ambiente.find((it) => it.id === 'guirnalda_luces');
+
+  const POSICIONES_PARED = ['8%', '36%', '64%', '92%'];
+  const POSICIONES_ESTANTE = ['20%', '50%', '80%'];
+  const POSICIONES_MASCOTAS = ['16%', '84%'];
+
+  return (
+    <div className="relative w-full rounded-3xl overflow-hidden" style={{ minHeight: 420 }}>
+      {/* Pared */}
+      <div className="absolute inset-0 bg-gradient-to-b from-[#241a3d] via-[#1c1536] to-[#170f2b]" />
+      <div
+        className="absolute inset-0 opacity-[0.04]"
+        style={{
+          backgroundImage: 'repeating-linear-gradient(90deg, white 0px, white 1px, transparent 1px, transparent 48px)',
+        }}
+      />
+      {/* Alfombra, pegada al piso, debajo de todo lo demás */}
+      {alfombra && (
+        <div className="absolute bottom-2 left-1/2 -translate-x-1/2 w-56 h-16 z-0">
+          <DecoracionSVG itemId={alfombra.id} />
+        </div>
+      )}
+      {/* Piso */}
+      <div className="absolute bottom-0 inset-x-0 h-20 bg-black/25 border-t border-white/5" />
+
+      {/* Guirnalda, en la orilla superior */}
+      {guirnalda && (
+        <div className="absolute top-0 inset-x-0 h-8">
+          <DecoracionSVG itemId={guirnalda.id} />
+        </div>
+      )}
+
+      {/* Fila de pared: cuadros, ventana, reloj */}
+      {pared.map((item, i) => (
+        <div
+          key={item.id}
+          className="absolute w-12 h-12 -translate-x-1/2"
+          style={{ left: POSICIONES_PARED[i], top: 30 }}
+          title={item.nombre}
+        >
+          <DecoracionSVG itemId={item.id} />
+        </div>
+      ))}
+
+      {/* Dron, flotando a un lado, entre la pared y la vitrina */}
+      {drones.map((item) => (
+        <div
+          key={item.id}
+          className="absolute w-11 h-11 -translate-x-1/2 z-20"
+          style={{ left: '76%', top: 78 }}
+          title={item.nombre}
+        >
+          <DecoracionSVG itemId={item.id} />
+        </div>
+      ))}
+
+      {/* Vitrina de trofeos, con color propio para que se note qué es */}
+      <div
+        className="absolute left-1/2 -translate-x-1/2 rounded-lg border border-amber-500/20"
+        style={{ top: 108, width: 220, height: 44, background: 'linear-gradient(180deg, #4a3670 0%, #3a2b5c 100%)' }}
+      >
+        <div className="absolute bottom-0 inset-x-0 h-1.5 bg-amber-700/70 rounded-b-lg" />
+        <p className="absolute -top-4 left-1/2 -translate-x-1/2 text-[8px] text-amber-400/70 font-black uppercase tracking-widest whitespace-nowrap">
+          Vitrina de Trofeos
+        </p>
+      </div>
+      {trofeos.map((item, i) => (
+        <div
+          key={item.id}
+          className="absolute w-11 h-11 -translate-x-1/2"
+          style={{ left: POSICIONES_ESTANTE[i], top: 82 }}
+          title={item.nombre}
+        >
+          <DecoracionSVG itemId={item.id} />
+        </div>
+      ))}
+
+      {itemsComprados.length === 0 && (
+        <p className="absolute left-1/2 -translate-x-1/2 top-40 text-[9px] text-slate-500 font-bold uppercase tracking-widest whitespace-nowrap">
+          El cuarto espera su primera decoración
+        </p>
+      )}
+
+      {/* Todú, en el centro */}
+      <div
+        className="absolute left-1/2 -translate-x-1/2 bottom-16 w-56 h-56 flex items-center justify-center cursor-pointer active:scale-95 transition-transform z-10"
+        onClick={onCosquillas}
+      >
+        <div className="absolute inset-0 bg-gradient-to-t from-[#6d28d9]/30 to-transparent rounded-full blur-2xl pointer-events-none"></div>
+        <ToduAvatar emotion={emocionActual} mensaje={mensaje} size={260} />
+      </div>
+
+      {/* Planta, a un lado en el piso */}
+      {planta && (
+        <div className="absolute bottom-14 left-3 w-14 h-14 z-10" title={planta.nombre}>
+          <DecoracionSVG itemId={planta.id} />
+        </div>
+      )}
+
+      {/* Mascotas, a los pies de Todú */}
+      {mascotas.slice(0, 2).map((item, i) => (
+        <div
+          key={item.id}
+          className="absolute w-14 h-14 -translate-x-1/2 z-10"
+          style={{ left: POSICIONES_MASCOTAS[i], bottom: 14 }}
+          title={item.nombre}
+        >
+          <DecoracionSVG itemId={item.id} />
+        </div>
+      ))}
+      {mascotas.length > 2 && (
+        <div className="absolute w-14 h-14 -translate-x-1/2 z-10" style={{ left: '50%', bottom: 14 }} title={mascotas[2].nombre}>
+          <DecoracionSVG itemId={mascotas[2].id} />
+        </div>
+      )}
+
+      {/* Buró, con color madera propio para que se distinga de la pared */}
+      {accesorios.length > 0 && (
+        <div
+          className="absolute bottom-14 right-4 w-24 h-9 rounded-t-md z-10"
+          style={{ background: 'linear-gradient(180deg, #a56336 0%, #7c4a26 100%)' }}
+        >
+          <div className="absolute -bottom-3 left-1.5 w-2 h-3 bg-[#5c3719]" />
+          <div className="absolute -bottom-3 right-1.5 w-2 h-3 bg-[#5c3719]" />
+          <div className="absolute -top-9 left-0 flex gap-1">
+            {accesorios.map((item) => (
+              <div key={item.id} className="w-9 h-9" title={item.nombre}>
+                <DecoracionSVG itemId={item.id} />
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}

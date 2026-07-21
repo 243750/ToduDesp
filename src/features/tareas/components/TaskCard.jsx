@@ -27,7 +27,7 @@ export default function TaskCard({ tarea, onEdit, onDelete, onEvidencia }) {
         <div className={`flex items-center gap-1.5 ${isVencida ? 'text-rose-400' : 'text-slate-400'}`}>
           {isCompletada ? <CheckCircle2 className="w-3.5 h-3.5" /> : <Clock className="w-3.5 h-3.5" />}
           <span className="text-[10px] font-bold uppercase tracking-wider">
-            {tarea.descripcion ? `${formato12Horas(tarea.descripcion.split(' ')[0])} · ` : ''}
+            {tarea.descripcion ? `${formato12Horas(tarea.descripcion)} · ` : ''}
             {tarea.xpValor} XP {isVencida ? '• Atrasada' : isCompletada ? '• Completada' : ''}
           </span>
         </div>

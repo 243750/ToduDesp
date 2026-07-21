@@ -1,13 +1,11 @@
 'use client';
 import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
-import { Plus, Check, X, MapPin, RefreshCw, AlertCircle } from 'lucide-react';
+import { Plus, Check, X, MapPin, RefreshCw, AlertCircle, ExternalLink } from 'lucide-react';
 import { api, ApiError } from '../../lib/api';
+
 const CATEGORIES = ['Todos', 'Cafeterías', 'Bibliotecas', 'Parques', 'Para comer', 'Otros'];
 
-// Imagen genérica por categoría — el backend de /geo/cercanos no trae
-// fotos reales del lugar todavía (eso necesitaría una llamada aparte
-// a la API de fotos de Google), así que usamos una representativa.
 const IMAGEN_POR_CATEGORIA = {
   'Cafeterías': 'https://images.unsplash.com/photo-1554118811-1e0d58224f24?auto=format&fit=crop&w=600&q=80',
   'Bibliotecas': 'https://images.unsplash.com/photo-1568667256549-094345857637?auto=format&fit=crop&w=600&q=80',
@@ -16,7 +14,6 @@ const IMAGEN_POR_CATEGORIA = {
   'Otros': 'https://images.unsplash.com/photo-1477959858617-67f85cf4f1df?auto=format&fit=crop&w=600&q=80',
 };
 
-// Traduce los "types" que regresa Google Places a nuestras categorías en español.
 function inferirCategoria(types = []) {
   if (types.includes('cafe')) return 'Cafeterías';
   if (types.includes('library')) return 'Bibliotecas';
@@ -25,9 +22,6 @@ function inferirCategoria(types = []) {
   return 'Otros';
 }
 
-// Distancia en línea recta (fórmula de Haversine) entre tu ubicación
-// real y la del lugar — no es la ruta exacta caminando/en auto, pero
-// es un cálculo real a partir de coordenadas reales, no inventado.
 function calcularDistanciaKm(lat1, lng1, lat2, lng2) {
   if (lat2 == null || lng2 == null) return null;
   const R = 6371;
@@ -51,12 +45,11 @@ export default function PlacesPage() {
   const [errorMsg, setErrorMsg] = useState(null);
 
   const [ubicacion, setUbicacion] = useState(null);
-  const [estadoUbicacion, setEstadoUbicacion] = useState('pidiendo'); // pidiendo | lista | negada | error
+  const [estadoUbicacion, setEstadoUbicacion] = useState('pidiendo');
   const [places, setPlaces] = useState([]);
   const [cargandoPlaces, setCargandoPlaces] = useState(false);
   const [errorPlaces, setErrorPlaces] = useState(null);
 
-  // --- Paso 1: pedir tu ubicación real al navegador ---
   const pedirUbicacion = useCallback(() => {
     if (!navigator.geolocation) {
       setEstadoUbicacion('error');
@@ -80,7 +73,6 @@ export default function PlacesPage() {
     pedirUbicacion();
   }, [pedirUbicacion]);
 
-  // --- Paso 2: con la ubicación en mano, pedirle al backend los lugares reales ---
   useEffect(() => {
     if (!ubicacion) return;
     let cancelled = false;
@@ -103,7 +95,7 @@ export default function PlacesPage() {
           lat: p.geometry?.lat,
           lng: p.geometry?.lng,
           imageUrl: IMAGEN_POR_CATEGORIA[inferirCategoria(p.types)],
-          toduTip: p.tip || 'Todú todavía no tiene un tip para este lugar — pero seguro vale la pena.',
+          toduTip: p.tip || 'Todú todavía no tiene un tip para este lugar, pero seguro vale la pena.',
         }));
         setPlaces(mapeados);
       })
@@ -150,7 +142,7 @@ export default function PlacesPage() {
 
   return (
     <div className="min-h-screen bg-[#150f27] text-slate-200 font-sans pb-10 overflow-x-hidden">
-      
+
       <header className="sticky top-0 z-50 bg-[#150f27]/90 backdrop-blur-md px-6 py-4 flex items-center gap-4 border-b border-white/5">
         <Link href="/descubrir" className="w-10 h-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-slate-400 hover:text-white hover:bg-white/10 transition-all">
           <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -165,7 +157,6 @@ export default function PlacesPage() {
 
       <main className="max-w-7xl mx-auto flex flex-col mt-4">
 
-        {/* --- Estados de ubicación --- */}
         {estadoUbicacion === 'pidiendo' && (
           <div className="px-6 py-16 flex flex-col items-center text-center gap-3">
             <RefreshCw className="w-8 h-8 text-violet-400 animate-spin" />
@@ -254,7 +245,7 @@ export default function PlacesPage() {
                 {filteredPlaces.length > 0 ? (
                   filteredPlaces.map((place) => (
                     <div key={place.id} className="bg-white/5 border border-white/10 rounded-3xl overflow-hidden flex flex-col group cursor-pointer hover:border-white/20 transition-colors h-full">
-                      
+
                       <div
                         className="relative h-48 w-full overflow-hidden cursor-pointer flex-shrink-0"
                         onClick={() => setMapOpenId(mapOpenId === place.id ? null : place.id)}
@@ -285,13 +276,14 @@ export default function PlacesPage() {
                               src={`https://maps.google.com/maps?q=${place.lat},${place.lng}&z=15&output=embed`}
                             />
                           </div>
-                          
+                            <a
                             href={`https://www.google.com/maps/search/?api=1&query=${place.lat},${place.lng}`}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="block text-center py-2 text-[11px] font-bold text-violet-300 hover:text-violet-200 bg-black/30"
+                            className="flex items-center justify-center gap-1.5 text-center py-2 text-[11px] font-bold text-violet-300 hover:text-violet-200 bg-black/30"
                           >
-                            Abrir en Google Maps ↗
+                            Abrir en Google Maps
+                            <ExternalLink className="w-3 h-3" />
                           </a>
                         </div>
                       )}

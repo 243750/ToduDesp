@@ -1,26 +1,38 @@
 'use client';
 import { useState } from 'react';
-import { Menu, HelpCircle, X, Coins, TrendingUp, Flame } from 'lucide-react';
-import ToduAvatar from '../../../components/ToduAvatar';
+import { Menu, HelpCircle, X, Coins, TrendingUp, Flame, ShoppingBag } from 'lucide-react';
 import { useSidebar } from '../../../context/SidebarContext';
 import useGamificacion from '../../../features/gamificacion/hooks/useGamificacion';
 import useRobotState from '../../../features/robot/hooks/useRobotState';
+import useDecoraciones from '../../../features/decoraciones/hooks/useDecoraciones';
+import TiendaModal from '../../../components/decoraciones/TiendaModal';
+import EscenaCuartoTodu from '../../../components/decoraciones/EscenaCuartoTodu';
 import MiniToduHelper from './components/MiniToduHelper';
 
 export default function MiToduPage() {
   const { open: openSidebar } = useSidebar();
   const { progreso } = useGamificacion();
   const [showHelp, setShowHelp] = useState(false);
+  const [showTienda, setShowTienda] = useState(false);
 
   const { emocionActual, mensaje, hacerCosquillas } = useRobotState('mi-todu');
+  const { compradas, comprando, error, yaComprado, comprar } = useDecoraciones();
 
   const xpPct = progreso?.progresoPorcentaje ?? 0;
   const racha = progreso?.rachaActual ?? 0;
+  const xpDisponible = progreso?.xpDisponible ?? 0;
 
   let rachaColor = 'text-slate-500';
   if (racha > 0 && racha <= 2) rachaColor = 'text-orange-400';
   if (racha >= 3 && racha <= 6) rachaColor = 'text-emerald-400';
   if (racha >= 7) rachaColor = 'text-violet-400 drop-shadow-[0_0_8px_rgba(167,139,250,0.5)]';
+
+  // TODO backend: reemplazar por una función real que llame a
+  // POST /tienda/comprar y refresque useGamificacion() con el saldo
+  // real. Por ahora NO descuenta tus Coins reales todavía.
+  const handleComprar = (itemId, precio) => {
+    comprar(itemId, precio, xpDisponible, null);
+  };
 
   return (
     <div className="min-h-screen bg-[#150f27] text-slate-200 font-sans pb-28 overflow-x-hidden relative">
@@ -40,15 +52,23 @@ export default function MiToduPage() {
 
       <main className="max-w-md mx-auto px-6 flex flex-col gap-6">
 
-        <section className="flex flex-col items-center justify-center py-4">
-          <div 
-            className="relative w-56 h-56 flex items-center justify-center cursor-pointer active:scale-95 transition-transform z-10"
-            onClick={hacerCosquillas}
-          >
-            <div className="absolute inset-0 bg-gradient-to-t from-[#6d28d9]/30 to-transparent rounded-full blur-2xl pointer-events-none"></div>
-            <ToduAvatar emotion={emocionActual} mensaje={mensaje} size={260} />
+        <div>
+          <div className="flex items-center justify-between mb-3">
+            <h3 className="text-xs font-bold text-slate-400 uppercase tracking-widest">Cuarto de Todú</h3>
+            <button
+              onClick={() => setShowTienda(true)}
+              className="flex items-center gap-1.5 text-[10px] font-bold text-violet-300 bg-violet-500/10 border border-violet-500/20 px-3 py-1.5 rounded-full hover:bg-violet-500/20 transition-colors"
+            >
+              <ShoppingBag className="w-3 h-3" /> Tienda
+            </button>
           </div>
-        </section>
+          <EscenaCuartoTodu
+            compradas={compradas}
+            emocionActual={emocionActual}
+            mensaje={mensaje}
+            onCosquillas={hacerCosquillas}
+          />
+        </div>
 
         <div className="stat-card-outer">
           <div className="stat-card-dot"></div>
@@ -73,14 +93,11 @@ export default function MiToduPage() {
                 </div>
               </div>
 
-              {/* Coins: cartera gastable (Farkle, y pronto la tienda de
-                  desbloqueables). Distinta del XP Total de abajo, que
-                  nunca baja y es lo que define tu nivel. */}
               <div className="flex items-center justify-between bg-black/30 border border-amber-500/20 rounded-2xl px-4 py-3 mb-4">
                 <span className="flex items-center gap-1.5 text-[10px] font-bold text-amber-400 uppercase tracking-widest">
                   <Coins className="w-3.5 h-3.5" /> Coins
                 </span>
-                <span className="text-lg font-black text-amber-400">{progreso?.xpDisponible ?? 0}</span>
+                <span className="text-lg font-black text-amber-400">{xpDisponible}</span>
               </div>
 
               <div className="relative pt-2">
@@ -102,6 +119,17 @@ export default function MiToduPage() {
         <MiniToduHelper />
 
       </main>
+
+      {showTienda && (
+        <TiendaModal
+          onClose={() => setShowTienda(false)}
+          xpDisponible={xpDisponible}
+          yaComprado={yaComprado}
+          comprando={comprando}
+          error={error}
+          onComprar={handleComprar}
+        />
+      )}
 
       {showHelp && (
         <div className="fixed inset-0 z-50 bg-[#150f27]/95 backdrop-blur-md flex flex-col items-center justify-center p-6">
