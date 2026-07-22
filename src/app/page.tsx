@@ -5,6 +5,7 @@ import Script from 'next/script';
 import Link from 'next/link';
 import { Mail } from 'lucide-react';
 import ToduLogo from '../components/ToduLogo';
+import ThemeToggle from '../components/ThemeToggle';
 import { useAuth } from '../context/AuthContext';
 import { ROUTES } from '../lib/routes';
 
@@ -66,23 +67,25 @@ export default function WelcomePage() {
   }, [scriptReady, loginWithGoogle, router]);
 
   return (
-    <div className="min-h-screen bg-[#150f27] flex items-center justify-center font-sans p-4 relative overflow-hidden">
+    <div className="min-h-screen bg-todu-bg flex items-center justify-center font-sans p-4 relative overflow-hidden">
       <Script
         src="https://accounts.google.com/gsi/client"
         strategy="afterInteractive"
         onLoad={() => setScriptReady(true)}
       />
 
+      <ThemeToggle className="absolute top-6 right-6 z-10" />
+
       <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-72 h-72 bg-violet-600/20 rounded-full blur-[100px] pointer-events-none" />
       {/* Contenedor con aspecto de dispositivo móvil */}
-      <div className="relative w-full max-w-sm bg-[#1f1638] border border-white/5 rounded-[2.5rem] shadow-2xl p-8 flex flex-col justify-between items-center h-[85vh] min-h-[580px]">
+      <div className="relative w-full max-w-sm bg-todu-surface border border-todu-border rounded-[2.5rem] shadow-2xl p-8 flex flex-col justify-between items-center h-[85vh] min-h-[580px]">
         {/* Sección Superior: Logo e Isotipo */}
         <div className="flex flex-col items-center justify-center flex-1 space-y-4">
           <ToduLogo size={96} />
-          <h1 className="text-4xl font-black text-white tracking-tight">
+          <h1 className="text-4xl font-black text-todu-text tracking-tight">
             Tod<span className="text-violet-400">ú</span>
           </h1>
-          <p className="text-slate-400 text-sm font-medium tracking-wide">
+          <p className="text-todu-text-muted text-sm font-medium tracking-wide">
             Dale vida a tu productividad
           </p>
         </div>
@@ -125,7 +128,7 @@ export default function WelcomePage() {
             </button>
           </Link>
         </div>
-        <div className="text-xs font-medium text-slate-400 tracking-wide pb-2">
+        <div className="text-xs font-medium text-todu-text-muted tracking-wide pb-2">
           ¿No tienes cuenta?{' '}
           <Link href="/registro" className="text-violet-400 font-bold hover:underline transition">
             Únete

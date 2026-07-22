@@ -43,13 +43,13 @@ export default function DescubrirPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#0b1120] text-slate-200 font-sans pb-28 lg:pb-12 overflow-x-hidden relative">
+    <div className="min-h-screen bg-todu-bg text-todu-text font-sans pb-28 lg:pb-12 overflow-x-hidden relative">
       <header className="flex items-center justify-between p-6">
-        <button onClick={openSidebar} className="text-slate-400 hover:text-white transition-colors lg:hidden">
+        <button onClick={openSidebar} className="text-todu-text-muted hover:text-todu-text transition-colors lg:hidden">
           <Menu className="w-7 h-7" />
         </button>
         <div className="flex flex-col items-center flex-1 lg:items-start lg:flex-none">
-          <h1 className="text-sm font-black text-white uppercase tracking-widest">Descubrir</h1>
+          <h1 className="text-sm font-black text-todu-text uppercase tracking-widest">Descubrir</h1>
           <span className="text-[10px] text-violet-400 font-bold tracking-wide">
             Expande tu universo
           </span>
@@ -66,9 +66,9 @@ export default function DescubrirPage() {
       <main className="max-w-md mx-auto px-6 flex flex-col gap-6 mt-4">
 
         <div className="text-center mb-2">
-          <p className="text-xs text-slate-400 font-bold uppercase tracking-widest mb-1">Tu Nivel Real</p>
+          <p className="text-xs text-todu-text-muted font-bold uppercase tracking-widest mb-1">Tu Nivel Real</p>
           <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-violet-500/20 border-2 border-violet-500/30 shadow-[0_0_20px_rgba(139,92,246,0.2)]">
-            <span className="text-2xl font-black text-white">{nivelActual}</span>
+            <span className="text-2xl font-black text-todu-text">{nivelActual}</span>
           </div>
         </div>
 
@@ -83,13 +83,13 @@ export default function DescubrirPage() {
                 disabled={isLocked}
                 className="relative w-full text-left rounded-3xl h-44 border-2 border-white/10 overflow-hidden group shadow-xl transition-transform active:scale-[0.98]"
               >
-                <div 
+                <div
                   className={`absolute inset-0 bg-cover bg-center transition-all duration-700 ${
                     isLocked ? 'grayscale opacity-20' : 'opacity-40 group-hover:scale-110 group-hover:opacity-60'
                   }`}
                   style={{ backgroundImage: `url(${modulo.image})` }}
                 ></div>
-                
+
                 <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/50 to-transparent"></div>
 
                 <div className="absolute inset-0 p-5 flex flex-col justify-end z-10">
@@ -106,7 +106,7 @@ export default function DescubrirPage() {
                     </div>
                     {!isLocked && <ChevronRight className="w-6 h-6 text-white/50 group-hover:text-white transition-colors" />}
                   </div>
-                  
+
                   <p className={`text-xs mt-2 w-5/6 ${isLocked ? 'text-slate-500' : 'text-slate-200 drop-shadow-md'}`}>
                     {modulo.description}
                   </p>
@@ -127,25 +127,25 @@ export default function DescubrirPage() {
       </main>
 
       {showHelp && (
-        <div className="fixed inset-0 z-50 bg-[#0b1120]/95 backdrop-blur-md flex flex-col items-center justify-center p-6">
-          <div className="bg-[#151b2e] border border-violet-500/30 rounded-[2rem] p-6 w-full max-w-sm relative shadow-[0_0_40px_rgba(139,92,246,0.15)]">
-            <button onClick={() => setShowHelp(false)} className="absolute top-5 right-5 text-slate-400 hover:text-white bg-white/5 p-1.5 rounded-full transition-colors">
+        <div className="fixed inset-0 z-50 bg-todu-bg/95 backdrop-blur-md flex flex-col items-center justify-center p-6">
+          <div className="bg-todu-surface border border-violet-500/30 rounded-[2rem] p-6 w-full max-w-sm relative shadow-[0_0_40px_rgba(139,92,246,0.15)]">
+            <button onClick={() => setShowHelp(false)} className="absolute top-5 right-5 text-todu-text-muted hover:text-todu-text bg-todu-surface-alt p-1.5 rounded-full transition-colors">
               <X className="w-5 h-5" />
             </button>
-            <div className="flex flex-col items-center text-center mb-6 border-b border-white/5 pb-6 pt-2">
+            <div className="flex flex-col items-center text-center mb-6 border-b border-todu-border pb-6 pt-2">
               <div className="w-16 h-16 bg-violet-500/10 border border-violet-500/30 rounded-2xl flex items-center justify-center text-violet-400 mb-4">
                 <HelpCircle className="w-8 h-8" />
               </div>
-              <h3 className="text-xl font-black text-white mb-1">Descubrir, explicado</h3>
-              <p className="text-xs text-slate-400">Cómo se desbloquea cada módulo</p>
+              <h3 className="text-xl font-black text-todu-text mb-1">Descubrir, explicado</h3>
+              <p className="text-xs text-todu-text-muted">Cómo se desbloquea cada módulo</p>
             </div>
 
             <div className="space-y-5 text-sm">
               <div className="flex gap-4 items-start">
                 <div className="mt-1 bg-emerald-500/20 p-2 rounded-xl text-emerald-400"><MapPin className="w-4 h-4" /></div>
                 <div>
-                  <h4 className="text-white font-bold mb-0.5">Places (Nivel 2)</h4>
-                  <p className="text-slate-400 text-xs leading-relaxed">
+                  <h4 className="text-todu-text font-bold mb-0.5">Places (Nivel 2)</h4>
+                  <p className="text-todu-text-muted text-xs leading-relaxed">
                     Lugares reales cerca de ti, con recomendaciones y la opción de agregarlos directo a tus Tareas.
                   </p>
                 </div>
@@ -154,8 +154,8 @@ export default function DescubrirPage() {
               <div className="flex gap-4 items-start">
                 <div className="mt-1 bg-cyan-500/20 p-2 rounded-xl text-cyan-400"><Gamepad2 className="w-4 h-4" /></div>
                 <div>
-                  <h4 className="text-white font-bold mb-0.5">Arcade (Nivel 3)</h4>
-                  <p className="text-slate-400 text-xs leading-relaxed">
+                  <h4 className="text-todu-text font-bold mb-0.5">Arcade (Nivel 3)</h4>
+                  <p className="text-todu-text-muted text-xs leading-relaxed">
                     Juegos donde apuestas tus Coins (tu cartera gastable) contra Todú — ganar la duplica, perder la vacía, pero tu Nivel nunca se ve afectado.
                   </p>
                 </div>
@@ -164,8 +164,8 @@ export default function DescubrirPage() {
               <div className="flex gap-4 items-start">
                 <div className="mt-1 bg-rose-500/20 p-2 rounded-xl text-rose-400"><Lock className="w-4 h-4" /></div>
                 <div>
-                  <h4 className="text-white font-bold mb-0.5">¿Por qué está bloqueado?</h4>
-                  <p className="text-slate-400 text-xs leading-relaxed">
+                  <h4 className="text-todu-text font-bold mb-0.5">¿Por qué está bloqueado?</h4>
+                  <p className="text-todu-text-muted text-xs leading-relaxed">
                     Cada módulo pide un Nivel mínimo. ¡Completa tareas para ganar XP real y subir de Nivel!
                   </p>
                 </div>

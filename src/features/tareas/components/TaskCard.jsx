@@ -25,7 +25,7 @@ export default function TaskCard({ tarea, onEdit, onDelete, onEvidencia, ocultar
     return `${hora.toString().padStart(2, '0')}:${m} ${ampm}`;
   };
 
-// URL universal de Google Maps — abre la app en móvil o la web en
+  // URL universal de Google Maps — abre la app en móvil o la web en
   // escritorio, sin necesitar nada especial de nuestro lado.
   // Con `query_place_id` (el placeId real de Google que ya guardamos),
   // Maps abre la ficha completa del lugar — nombre, reseñas, horario,
@@ -43,11 +43,11 @@ export default function TaskCard({ tarea, onEdit, onDelete, onEvidencia, ocultar
   const urlMaps = construirUrlMaps(tarea.lugar);
 
   return (
-    <div className={`bg-[#1f1638] border border-white/5 rounded-3xl p-4 flex items-center justify-between gap-3 shadow-lg ${isVencida ? 'border-l-4 border-l-rose-500' : ''}`}>
+    <div className={`bg-todu-surface border border-todu-border rounded-3xl p-4 flex items-center justify-between gap-3 shadow-lg ${isVencida ? 'border-l-4 border-l-rose-500' : ''}`}>
       <div className="flex flex-col gap-1.5 min-w-0">
         <h3
           title={tarea.titulo}
-          className={`text-base font-bold leading-snug line-clamp-3 ${isCompletada ? 'text-slate-500 line-through' : 'text-white'}`}
+          className={`text-base font-bold leading-snug line-clamp-3 ${isCompletada ? 'text-todu-text-muted line-through' : 'text-todu-text'}`}
         >
           {tarea.titulo}
         </h3>
@@ -64,13 +64,13 @@ export default function TaskCard({ tarea, onEdit, onDelete, onEvidencia, ocultar
               </span>
             )}
             {tarea.aplicaHoy === false && (
-              <span className="bg-white/5 border border-white/10 text-slate-500 text-[9px] font-black uppercase tracking-widest px-2 py-0.5 rounded-full">
+              <span className="bg-todu-surface-alt border border-todu-border text-todu-text-muted text-[9px] font-black uppercase tracking-widest px-2 py-0.5 rounded-full">
                 Hoy no te toca
               </span>
             )}
           </div>
         )}
-        <div className={`flex items-center gap-1.5 ${isVencida ? 'text-rose-400' : 'text-slate-400'}`}>
+        <div className={`flex items-center gap-1.5 ${isVencida ? 'text-rose-400' : 'text-todu-text-muted'}`}>
           {isCompletada ? <CheckCircle2 className="w-3.5 h-3.5" /> : <Clock className="w-3.5 h-3.5" />}
           <span className="text-[10px] font-bold uppercase tracking-wider">
             {esFija
@@ -87,10 +87,10 @@ export default function TaskCard({ tarea, onEdit, onDelete, onEvidencia, ocultar
         )}
       </div>
       <div className="flex items-center gap-2 flex-shrink-0">
-        <button onClick={() => onEdit(tarea)} className="w-9 h-9 rounded-xl bg-white/5 text-slate-400 border border-white/10 flex items-center justify-center hover:bg-blue-500 hover:text-white hover:border-blue-500 transition-colors">
+        <button onClick={() => onEdit(tarea)} className="w-9 h-9 rounded-xl bg-todu-surface-alt text-todu-text-muted border border-todu-border flex items-center justify-center hover:bg-blue-500 hover:text-white hover:border-blue-500 transition-colors">
           <Pencil className="w-4 h-4" />
         </button>
-        <button onClick={() => onDelete(tarea)} className="w-9 h-9 rounded-xl bg-white/5 text-slate-400 border border-white/10 flex items-center justify-center hover:bg-rose-500 hover:text-white hover:border-rose-500 transition-colors">
+        <button onClick={() => onDelete(tarea)} className="w-9 h-9 rounded-xl bg-todu-surface-alt text-todu-text-muted border border-todu-border flex items-center justify-center hover:bg-rose-500 hover:text-white hover:border-rose-500 transition-colors">
           <Trash2 className="w-4 h-4" />
         </button>
         {!isCompletada && !ocultarEvidencia && (

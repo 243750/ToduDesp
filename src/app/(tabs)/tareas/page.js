@@ -1,6 +1,6 @@
 'use client';
 import { useEffect, useState } from 'react';
-import { HelpCircle, Plus, Camera, X, CheckCircle2, Menu, Coins, Repeat, MapPin } from 'lucide-react';
+import { HelpCircle, Plus, Camera, X, CheckCircle2, Menu, Coins, Repeat, MapPin, Trash2 } from 'lucide-react';
 import ToduAvatar from '../../../components/ToduAvatar';
 import { useSidebar } from '../../../context/SidebarContext';
 import { useAuth } from '../../../context/AuthContext';
@@ -114,24 +114,30 @@ export default function TareasPage() {
     return () => window.removeEventListener('resize', updateAvatarSize);
   }, []);
 
-  const handleDelete = async (tarea) => {
-    const confirmado = window.confirm(`¿Eliminar "${tarea.titulo}"? Esta acción no se puede deshacer.`);
-    if (!confirmado) return;
+  const [tareaABorrar, setTareaABorrar] = useState(null);
+  const [borrando, setBorrando] = useState(false);
+
+  const confirmarBorrado = async () => {
+    if (!tareaABorrar) return;
+    setBorrando(true);
     try {
-      await eliminarTarea(tarea);
+      await eliminarTarea(tareaABorrar);
+      setTareaABorrar(null);
     } catch {
       // eliminarTarea ya revierte el estado optimista y re-lanza el error
+    } finally {
+      setBorrando(false);
     }
   };
 
   return (
-    <div className="min-h-screen bg-[#150f27] text-slate-200 font-sans pb-28 lg:pb-12 overflow-x-hidden relative">
+    <div className="min-h-screen bg-todu-bg text-todu-text font-sans pb-28 lg:pb-12 overflow-x-hidden relative">
       <header className="flex items-center justify-between p-6">
-        <button onClick={openSidebar} className="text-slate-400 hover:text-white transition-colors lg:hidden">
+        <button onClick={openSidebar} className="text-todu-text-muted hover:text-todu-text transition-colors lg:hidden">
           <Menu className="w-7 h-7" />
         </button>
         <div className="flex flex-col items-center flex-1 lg:items-start lg:flex-none">
-          <h1 className="text-sm font-black text-white uppercase tracking-widest">Mis Tareas</h1>
+          <h1 className="text-sm font-black text-todu-text uppercase tracking-widest">Mis Tareas</h1>
           <span className="text-[10px] text-violet-400 font-bold tracking-wide">
             ¡Qué onda{user?.username ? `, ${user.username}` : ''}! A darle.
           </span>
@@ -171,7 +177,7 @@ export default function TareasPage() {
             <button
               onClick={() => setTab('hoy')}
               className={`text-xs font-bold uppercase tracking-widest px-3 py-1.5 rounded-full transition-colors ${
-                tab === 'hoy' ? 'bg-violet-600 text-white' : 'text-slate-500 hover:text-slate-300'
+                tab === 'hoy' ? 'bg-violet-600 text-white' : 'text-todu-text-muted hover:text-todu-text'
               }`}
             >
               Hoy
@@ -179,7 +185,7 @@ export default function TareasPage() {
             <button
               onClick={() => setTab('historial')}
               className={`text-xs font-bold uppercase tracking-widest px-3 py-1.5 rounded-full transition-colors ${
-                tab === 'historial' ? 'bg-violet-600 text-white' : 'text-slate-500 hover:text-slate-300'
+                tab === 'historial' ? 'bg-violet-600 text-white' : 'text-todu-text-muted hover:text-todu-text'
               }`}
             >
               Historial
@@ -187,14 +193,14 @@ export default function TareasPage() {
             <button
               onClick={() => setTab('fijas')}
               className={`text-xs font-bold uppercase tracking-widest px-3 py-1.5 rounded-full transition-colors ${
-                tab === 'fijas' ? 'bg-violet-600 text-white' : 'text-slate-500 hover:text-slate-300'
+                tab === 'fijas' ? 'bg-violet-600 text-white' : 'text-todu-text-muted hover:text-todu-text'
               }`}
             >
               Fijas
             </button>
           </div>
 
-          {loadingTareas && <p className="text-sm text-slate-500 text-center py-8">Cargando tus tareas...</p>}
+          {loadingTareas && <p className="text-sm text-todu-text-muted text-center py-8">Cargando tus tareas...</p>}
           {errorTareas && !loadingTareas && (
             <p className="text-sm text-rose-400 bg-rose-500/10 border border-rose-500/20 rounded-2xl p-4 text-center">{errorTareas}</p>
           )}
@@ -202,12 +208,12 @@ export default function TareasPage() {
           {!loadingTareas && !errorTareas && tab === 'hoy' && (
             <>
               {tareas.length === 0 && (
-                <p className="text-sm text-slate-500 text-center py-8">
+                <p className="text-sm text-todu-text-muted text-center py-8">
                   Aún no tienes tareas. Toca el botón <span className="text-violet-400 font-bold">(+)</span> para crear la primera.
                 </p>
               )}
               {tareas.length > 0 && tareasDeHoy.length === 0 && (
-                <p className="text-sm text-slate-500 text-center py-8">
+                <p className="text-sm text-todu-text-muted text-center py-8">
                   Hoy no te toca ninguna tarea fija. ¡Aprovecha para descansar!
                 </p>
               )}
@@ -217,7 +223,7 @@ export default function TareasPage() {
                     key={tarea.id}
                     tarea={tarea}
                     onEdit={(t) => setTareaEditando(t)}
-                    onDelete={handleDelete}
+                    onDelete={setTareaABorrar}
                     onEvidencia={(t) => setTareaEvidencia(t)}
                   />
                 ))}
@@ -232,7 +238,7 @@ export default function TareasPage() {
           {!loadingTareas && !errorTareas && tab === 'fijas' && (
             <>
               {todasLasFijas.length === 0 && (
-                <p className="text-sm text-slate-500 text-center py-8">
+                <p className="text-sm text-todu-text-muted text-center py-8">
                   Aún no tienes tareas fijas. Créalas desde el botón <span className="text-violet-400 font-bold">(+)</span> activando "Tarea diaria".
                 </p>
               )}
@@ -242,7 +248,7 @@ export default function TareasPage() {
                     key={tarea.id}
                     tarea={tarea}
                     onEdit={(t) => setTareaEditando(t)}
-                    onDelete={handleDelete}
+                    onDelete={setTareaABorrar}
                     ocultarEvidencia
                   />
                 ))}
@@ -293,46 +299,90 @@ export default function TareasPage() {
         />
       )}
 
+      {tareaABorrar && (
+        <div className="fixed inset-0 z-50 bg-todu-bg/95 backdrop-blur-md flex flex-col items-center justify-center p-6">
+          <div className="bg-todu-surface border border-rose-500/30 rounded-[2rem] p-6 w-full max-w-sm relative shadow-[0_0_40px_rgba(244,63,94,0.15)]">
+            <div className="w-14 h-14 bg-rose-500/10 border border-rose-500/30 rounded-2xl flex items-center justify-center text-rose-400 mb-4 mx-auto">
+              <Trash2 className="w-7 h-7" />
+            </div>
+            <h3 className="text-lg font-black text-todu-text mb-2 text-center">¿Eliminar tarea?</h3>
+            <p className="text-sm text-todu-text-muted text-center mb-6">
+              Vas a eliminar <span className="text-todu-text font-bold">"{tareaABorrar.titulo}"</span>. Esta acción no se puede deshacer.
+            </p>
+            <div className="flex gap-3">
+              <button
+                onClick={() => setTareaABorrar(null)}
+                disabled={borrando}
+                className="flex-1 py-3 bg-todu-surface-alt hover:bg-todu-border text-todu-text font-bold rounded-xl text-sm transition-colors disabled:opacity-50"
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={confirmarBorrado}
+                disabled={borrando}
+                className="flex-1 py-3 bg-rose-600 hover:bg-rose-500 disabled:opacity-50 text-white font-bold rounded-xl text-sm transition-colors"
+              >
+                {borrando ? 'Eliminando...' : 'Sí, eliminar'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {showHelp && (
-        <div className="fixed inset-0 z-50 bg-[#150f27]/95 backdrop-blur-md flex flex-col items-center justify-center p-6">
-          <div className="bg-[#1f1638] border border-violet-500/30 rounded-[2rem] p-6 w-full max-w-sm relative shadow-[0_0_40px_rgba(139,92,246,0.15)] max-h-[85vh] overflow-y-auto">
-            <button onClick={() => setShowHelp(false)} className="absolute top-5 right-5 text-slate-400 hover:text-white bg-white/5 p-1.5 rounded-full transition-colors">
+        <div className="fixed inset-0 z-50 bg-todu-bg/95 backdrop-blur-md flex flex-col items-center justify-center p-6">
+          <div className="bg-todu-surface border border-violet-500/30 rounded-[2rem] p-6 w-full max-w-sm relative shadow-[0_0_40px_rgba(139,92,246,0.15)] max-h-[85vh] overflow-y-auto">
+            <button onClick={() => setShowHelp(false)} className="absolute top-5 right-5 text-todu-text-muted hover:text-todu-text bg-todu-surface-alt p-1.5 rounded-full transition-colors">
               <X className="w-5 h-5" />
             </button>
-            <div className="flex flex-col items-center text-center mb-6 border-b border-white/5 pb-6 pt-2">
+            <div className="flex flex-col items-center text-center mb-6 border-b border-todu-border pb-6 pt-2">
               <div className="w-16 h-16 bg-violet-500/10 border border-violet-500/30 rounded-2xl flex items-center justify-center text-violet-400 mb-4">
                 <HelpCircle className="w-8 h-8" />
               </div>
-              <h3 className="text-xl font-black text-white mb-1">¿Cómo funciona?</h3>
-              <p className="text-xs text-slate-400">Guía rápida de tus tareas y Todú</p>
+              <h3 className="text-xl font-black text-todu-text mb-1">¿Cómo funciona?</h3>
+              <p className="text-xs text-todu-text-muted">Guía rápida de tus tareas y Todú</p>
             </div>
             <div className="space-y-5 text-sm">
               <div className="flex gap-4 items-start">
                 <div className="mt-1 bg-blue-500/20 p-2 rounded-xl text-blue-400"><Plus className="w-4 h-4" /></div>
                 <div>
-                  <h4 className="text-white font-bold mb-0.5">Añadir tareas</h4>
-                  <p className="text-slate-400 text-xs leading-relaxed">Toca el botón central <span className="text-violet-400 font-bold">(+)</span> para crear una tarea y elegir su dificultad (más difícil, más XP).</p>
+                  <h4 className="text-todu-text font-bold mb-0.5">Añadir tareas</h4>
+                  <p className="text-todu-text-muted text-xs leading-relaxed">Toca el botón central <span className="text-violet-400 font-bold">(+)</span> para crear una tarea y elegir su dificultad (más difícil, más XP).</p>
                 </div>
               </div>
               <div className="flex gap-4 items-start">
                 <div className="mt-1 bg-purple-500/20 p-2 rounded-xl text-purple-400"><Camera className="w-4 h-4" /></div>
                 <div>
-                  <h4 className="text-white font-bold mb-0.5">Verificación Fotográfica</h4>
-                  <p className="text-slate-400 text-xs leading-relaxed">Toca el ícono de cámara en tus tareas. Toma una foto y <span className="text-white font-bold">la IA de Todú la analizará</span> para confirmar que la completaste.</p>
+                  <h4 className="text-todu-text font-bold mb-0.5">Verificación Fotográfica</h4>
+                  <p className="text-todu-text-muted text-xs leading-relaxed">Toca el ícono de cámara en tus tareas. Toma una foto y <span className="text-white font-bold">la IA de Todú la analizará</span> para confirmar que la completaste.</p>
                 </div>
               </div>
               <div className="flex gap-4 items-start">
                 <div className="mt-1 bg-green-500/20 p-2 rounded-xl text-green-400"><CheckCircle2 className="w-4 h-4" /></div>
                 <div>
-                  <h4 className="text-white font-bold mb-0.5">Gana Experiencia</h4>
-                  <p className="text-slate-400 text-xs leading-relaxed">Las tareas verificadas te otorgan XP. Úsala para evolucionar a Todú y desbloquear minijuegos.</p>
+                  <h4 className="text-todu-text font-bold mb-0.5">Gana Experiencia</h4>
+                  <p className="text-todu-text-muted text-xs leading-relaxed">Las tareas verificadas te otorgan XP. Úsala para evolucionar a Todú y desbloquear minijuegos.</p>
                 </div>
               </div>
               <div className="flex gap-4 items-start">
                 <div className="mt-1 bg-amber-500/20 p-2 rounded-xl text-amber-400"><Coins className="w-4 h-4" /></div>
                 <div>
-                  <h4 className="text-white font-bold mb-0.5">Y también ganas Coins</h4>
-                  <p className="text-slate-400 text-xs leading-relaxed">Cada tarea también llena tu cartera de Coins — una moneda aparte de tu XP, que puedes gastar apostando en el Arcade o comprando accesorios para Todú. A diferencia del XP (que nunca baja), los Coins sí se gastan.</p>
+                  <h4 className="text-todu-text font-bold mb-0.5">Y también ganas Coins</h4>
+                  <p className="text-todu-text-muted text-xs leading-relaxed">Cada tarea también llena tu cartera de Coins — una moneda aparte de tu XP, que puedes gastar apostando en el Arcade o comprando accesorios para Todú. A diferencia del XP (que nunca baja), los Coins sí se gastan.</p>
+                </div>
+              </div>
+              <div className="flex gap-4 items-start">
+                <div className="mt-1 bg-cyan-500/20 p-2 rounded-xl text-cyan-400"><Repeat className="w-4 h-4" /></div>
+                <div>
+                  <h4 className="text-todu-text font-bold mb-0.5">Tareas que se repiten</h4>
+                  <p className="text-todu-text-muted text-xs leading-relaxed">Al crearla, activa <span className="text-white font-bold">"Tarea diaria"</span> y elige los días y una hora de recordatorio. Usa la pestaña <span className="text-white font-bold">Hoy</span> para lo de hoy, <span className="text-white font-bold">Historial</span> para ver días pasados, y <span className="text-white font-bold">Fijas</span> para ver y editar todas tus tareas repetidas, aunque no les toque hoy.</p>
+                </div>
+              </div>
+              <div className="flex gap-4 items-start">
+                <div className="mt-1 bg-rose-500/20 p-2 rounded-xl text-rose-400"><MapPin className="w-4 h-4" /></div>
+                <div>
+                  <h4 className="text-todu-text font-bold mb-0.5">Tareas con ubicación</h4>
+                  <p className="text-todu-text-muted text-xs leading-relaxed">Si agregaste la tarea desde <span className="text-white font-bold">Places</span>, vas a ver un enlace de <span className="text-white font-bold">"Ver en Maps"</span> justo en la tarjeta, para llegar sin batallar.</p>
                 </div>
               </div>
             </div>

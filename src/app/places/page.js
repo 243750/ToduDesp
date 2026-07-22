@@ -223,16 +223,16 @@ export default function PlacesPage() {
   });
 
   return (
-    <div className="min-h-screen bg-[#150f27] text-slate-200 font-sans pb-10 overflow-x-hidden">
+    <div className="min-h-screen bg-todu-bg text-todu-text font-sans pb-10 overflow-x-hidden">
 
-      <header className="sticky top-0 z-50 bg-[#150f27]/90 backdrop-blur-md px-6 py-4 flex items-center gap-4 border-b border-white/5">
-        <Link href="/descubrir" className="w-10 h-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-slate-400 hover:text-white hover:bg-white/10 transition-all">
+      <header className="sticky top-0 z-50 bg-todu-bg/90 backdrop-blur-md px-6 py-4 flex items-center gap-4 border-b border-todu-border">
+        <Link href="/descubrir" className="w-10 h-10 rounded-full bg-todu-surface-alt border border-todu-border flex items-center justify-center text-todu-text-muted hover:text-todu-text hover:bg-todu-border transition-all">
           <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7" />
           </svg>
         </Link>
         <div className="flex-1">
-          <h1 className="text-lg font-bold text-white tracking-wide">Todú Places</h1>
+          <h1 className="text-lg font-bold text-todu-text tracking-wide">Todú Places</h1>
           <p className="text-[10px] text-violet-400 font-bold uppercase tracking-widest">Cerca de ti, en tiempo real</p>
         </div>
       </header>
@@ -242,15 +242,15 @@ export default function PlacesPage() {
         {estadoUbicacion === 'pidiendo' && (
           <div className="px-6 py-16 flex flex-col items-center text-center gap-3">
             <RefreshCw className="w-8 h-8 text-violet-400 animate-spin" />
-            <p className="text-sm text-slate-400 font-medium">Pidiendo permiso de ubicación...</p>
+            <p className="text-sm text-todu-text-muted font-medium">Pidiendo permiso de ubicación...</p>
           </div>
         )}
 
         {estadoUbicacion === 'negada' && (
           <div className="px-6 py-16 flex flex-col items-center text-center gap-3 max-w-sm mx-auto">
             <AlertCircle className="w-8 h-8 text-rose-400" />
-            <p className="text-sm text-white font-bold">Bloqueaste el permiso de ubicación</p>
-            <p className="text-xs text-slate-400">
+            <p className="text-sm text-todu-text font-bold">Bloqueaste el permiso de ubicación</p>
+            <p className="text-xs text-todu-text-muted">
               Places necesita saber dónde estás para recomendarte lugares reales cerca de ti. Actívalo en los ajustes de tu navegador para este sitio y vuelve a intentar.
             </p>
             <button
@@ -265,8 +265,8 @@ export default function PlacesPage() {
         {estadoUbicacion === 'error' && (
           <div className="px-6 py-16 flex flex-col items-center text-center gap-3 max-w-sm mx-auto">
             <AlertCircle className="w-8 h-8 text-rose-400" />
-            <p className="text-sm text-white font-bold">No pudimos obtener tu ubicación</p>
-            <p className="text-xs text-slate-400">{errorPlaces || 'Intenta de nuevo en un momento.'}</p>
+            <p className="text-sm text-todu-text font-bold">No pudimos obtener tu ubicación</p>
+            <p className="text-xs text-todu-text-muted">{errorPlaces || 'Intenta de nuevo en un momento.'}</p>
             <button
               onClick={pedirUbicacion}
               className="mt-2 px-5 py-2.5 bg-violet-600 hover:bg-violet-500 text-white text-xs font-bold rounded-xl transition-colors"
@@ -290,7 +290,7 @@ export default function PlacesPage() {
                   placeholder="¿Qué estás buscando hoy?"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full bg-white/5 border border-white/10 rounded-2xl py-3 pl-11 pr-4 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-violet-500/50 focus:ring-1 focus:ring-violet-500/50 transition-all"
+                  className="w-full bg-todu-surface-alt border border-todu-border rounded-2xl py-3 pl-11 pr-4 text-sm text-todu-text placeholder-todu-text-muted focus:outline-none focus:border-violet-500/50 focus:ring-1 focus:ring-violet-500/50 transition-all"
                 />
               </div>
             </div>
@@ -303,7 +303,7 @@ export default function PlacesPage() {
                   className={`snap-start whitespace-nowrap px-4 py-2 rounded-full text-xs font-bold transition-all ${
                     activeCategory === category
                       ? 'bg-violet-600 text-white shadow-[0_0_12px_rgba(139,92,246,0.4)]'
-                      : 'bg-white/5 text-slate-400 border border-white/10 hover:bg-white/10'
+                      : 'bg-todu-surface-alt text-todu-text-muted border border-todu-border hover:bg-todu-border'
                   }`}
                 >
                   {category}
@@ -314,19 +314,19 @@ export default function PlacesPage() {
             {cargandoPlaces ? (
               <div className="px-6 py-16 flex flex-col items-center text-center gap-3">
                 <RefreshCw className="w-8 h-8 text-violet-400 animate-spin" />
-                <p className="text-sm text-slate-400 font-medium">Buscando lugares cerca de ti...</p>
+                <p className="text-sm text-todu-text-muted font-medium">Buscando lugares cerca de ti...</p>
               </div>
             ) : errorPlaces ? (
               <div className="px-6 py-16 flex flex-col items-center text-center gap-3 max-w-sm mx-auto">
                 <AlertCircle className="w-8 h-8 text-rose-400" />
-                <p className="text-sm text-white font-bold">No se pudieron cargar los lugares</p>
-                <p className="text-xs text-slate-400">{errorPlaces}</p>
+                <p className="text-sm text-todu-text font-bold">No se pudieron cargar los lugares</p>
+                <p className="text-xs text-todu-text-muted">{errorPlaces}</p>
               </div>
             ) : (
               <div className="px-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                 {filteredPlaces.length > 0 ? (
                   filteredPlaces.map((place) => (
-                    <div key={place.id} className="bg-white/5 border border-white/10 rounded-3xl overflow-hidden flex flex-col group cursor-pointer hover:border-white/20 transition-colors h-full">
+                    <div key={place.id} className="bg-todu-surface border border-todu-border rounded-3xl overflow-hidden flex flex-col group cursor-pointer hover:border-violet-500/30 transition-colors h-full">
 
                       <div
                         className="relative h-48 w-full overflow-hidden cursor-pointer flex-shrink-0"
@@ -367,7 +367,7 @@ export default function PlacesPage() {
 
                       <div className="p-4 flex flex-col gap-2 flex-1">
                         <div className="flex justify-between items-start gap-2">
-                          <h2 className="text-sm font-bold text-white leading-tight line-clamp-2">{place.name}</h2>
+                          <h2 className="text-sm font-bold text-todu-text leading-tight line-clamp-2">{place.name}</h2>
                           {place.rating != null && (
                             <div className="flex items-center gap-1 bg-amber-500/10 px-2 py-1 rounded-lg border border-amber-500/20 flex-shrink-0">
                               <span className="text-xs text-amber-400">★</span>
@@ -376,10 +376,10 @@ export default function PlacesPage() {
                           )}
                         </div>
 
-                        <p className="text-[11px] text-slate-400 line-clamp-1">{place.address}</p>
+                        <p className="text-[11px] text-todu-text-muted line-clamp-1">{place.address}</p>
 
                         <div className="flex justify-between items-center mt-2 pt-3">
-                          <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">{place.category}</span>
+                          <span className="text-[10px] font-bold text-todu-text-muted uppercase tracking-wider">{place.category}</span>
                           {place.isOpen === true && (
                             <span className="text-[10px] font-black text-emerald-400 uppercase tracking-widest flex items-center gap-1">
                               <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 shadow-[0_0_5px_rgba(52,211,153,0.8)]"></span>
@@ -406,10 +406,10 @@ export default function PlacesPage() {
                             </svg>
                           </div>
 
-                          <div className="relative flex-1 bg-[#1f1638] border border-white/10 rounded-2xl p-3 shadow-md">
-                            <div className="absolute -left-[6px] bottom-[12px] w-3 h-3 bg-[#1f1638] border-l border-b border-white/10 transform rotate-45"></div>
+                          <div className="relative flex-1 bg-todu-surface-alt border border-todu-border rounded-2xl p-3 shadow-md">
+                            <div className="absolute -left-[6px] bottom-[12px] w-3 h-3 bg-todu-surface-alt border-l border-b border-todu-border transform rotate-45"></div>
                             <h4 className="text-[#FFC107] text-[11px] font-bold mb-1">Todú:</h4>
-                            <p className="text-[11px] text-slate-300 leading-snug font-medium">
+                            <p className="text-[11px] text-todu-text leading-snug font-medium">
                               {place.toduTip}
                             </p>
                           </div>
@@ -428,7 +428,7 @@ export default function PlacesPage() {
                               type="time"
                               value={hora}
                               onChange={(e) => setHora(e.target.value)}
-                              className="flex-1 bg-black/30 border border-white/10 rounded-xl px-3 py-2.5 text-sm text-white outline-none focus:border-violet-500/50"
+                              className="flex-1 bg-todu-bg border border-todu-border rounded-xl px-3 py-2.5 text-sm text-todu-text outline-none focus:border-violet-500/50"
                             />
                             <button
                               onClick={() => handleAgregarComoTarea(place)}
@@ -439,7 +439,7 @@ export default function PlacesPage() {
                             </button>
                             <button
                               onClick={() => setOpenFormId(null)}
-                              className="p-2.5 bg-white/5 hover:bg-white/10 text-slate-400 rounded-xl transition-colors"
+                              className="p-2.5 bg-todu-surface-alt hover:bg-todu-border text-todu-text-muted rounded-xl transition-colors"
                             >
                               <X className="w-4 h-4" />
                             </button>
@@ -463,7 +463,7 @@ export default function PlacesPage() {
                 ) : (
                   <div className="text-center py-10 md:col-span-2 lg:col-span-3 xl:col-span-4">
                     <span className="text-4xl block mb-3">📍</span>
-                    <p className="text-sm text-slate-400 font-medium">No encontramos lugares con esos filtros.</p>
+                    <p className="text-sm text-todu-text-muted font-medium">No encontramos lugares con esos filtros.</p>
                   </div>
                 )}
               </div>

@@ -9,6 +9,7 @@ import { useAuth } from '../context/AuthContext';
 import { useSidebar } from '../context/SidebarContext';
 import useGamificacion from '../features/gamificacion/hooks/useGamificacion';
 import { AVATAR_MAP } from '../lib/avatarOptions';
+import ThemeToggle from './ThemeToggle';
 
 const NAV_SECTIONS = [
   {
@@ -36,8 +37,8 @@ function SidebarContent({ onNavigate }) {
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
-      setAvatarKey(localStorage.getItem('todu_avatar') || 'user');
-      const handleAvatar = () => setAvatarKey(localStorage.getItem('todu_avatar') || 'user');
+      setAvatarKey(localStorage.getItem('todu_avatar') || 'ana');
+      const handleAvatar = () => setAvatarKey(localStorage.getItem('todu_avatar') || 'ana');
       window.addEventListener('avatar_changed', handleAvatar);
       return () => window.removeEventListener('avatar_changed', handleAvatar);
     }
@@ -52,29 +53,32 @@ function SidebarContent({ onNavigate }) {
   const ActiveAvatarIcon = AVATAR_MAP[avatarKey] || User;
 
   return (
-    <div className="flex flex-col h-full bg-[#1f1638] text-slate-200">
-      <div className="flex flex-col p-6 border-b border-white/5 gap-5">
+    <div className="flex flex-col h-full bg-todu-surface text-todu-text">
+      <div className="flex flex-col p-6 border-b border-todu-border gap-5">
         
         {/* ENLACE DIRECTO A AJUSTES CON EL NUEVO AVATAR */}
-        <Link href="/ajustes" onClick={onNavigate} className="flex items-center gap-3 p-2 -mx-2 rounded-2xl hover:bg-white/5 transition-colors group cursor-pointer">
-          <div className="w-11 h-11 rounded-xl bg-violet-500/20 border border-violet-500/30 flex items-center justify-center flex-shrink-0 shadow-inner overflow-hidden">
-            <ActiveAvatarIcon className="w-10 h-10" />
-          </div>
-          <div className="min-w-0">
-            <p className="text-sm font-bold text-white truncate group-hover:text-violet-300 transition-colors">
-              {user?.username || 'Invitado'}
-            </p>
-            <p className="text-[11px] text-slate-500 truncate">{user?.email || 'Sin sesión'}</p>
-          </div>
-        </Link>
+        <div className="flex items-center gap-2">
+          <Link href="/ajustes" onClick={onNavigate} className="flex-1 min-w-0 flex items-center gap-3 p-2 -mx-2 rounded-2xl hover:bg-white/5 transition-colors group cursor-pointer">
+            <div className="w-11 h-11 rounded-xl bg-violet-500/20 border border-violet-500/30 flex items-center justify-center flex-shrink-0 shadow-inner overflow-hidden">
+              <ActiveAvatarIcon className="w-10 h-10" />
+            </div>
+            <div className="min-w-0">
+              <p className="text-sm font-bold text-todu-text truncate group-hover:text-violet-300 transition-colors">
+                {user?.username || 'Invitado'}
+              </p>
+              <p className="text-[11px] text-todu-text-muted truncate">{user?.email || 'Sin sesión'}</p>
+            </div>
+          </Link>
+          <ThemeToggle />
+        </div>
 
         {/* TARJETA DE PROGRESO */}
         {user && (
-          <div className="bg-[#2a1f4c]/50 rounded-xl p-3 border border-violet-500/20 shadow-inner">
+          <div className="bg-todu-surface-alt/50 rounded-xl p-3 border border-violet-500/20 shadow-inner">
             <div className="flex justify-between items-end mb-2">
               <div>
                 <p className="text-[10px] text-violet-300/80 font-bold uppercase tracking-wider">Nivel Actual</p>
-                <p className="text-lg font-black text-white leading-none mt-1">{nivel || 1}</p>
+                <p className="text-lg font-black text-todu-text leading-none mt-1">{nivel || 1}</p>
               </div>
               <div className="text-right">
                 <p className="text-[10px] text-violet-300/80 font-bold uppercase tracking-wider">XP Total</p>
@@ -86,10 +90,10 @@ function SidebarContent({ onNavigate }) {
             </div>
             {/* Coins: la cartera gastable (baja al apostar/comprar), distinta
                 del XP Total de arriba (que nunca baja y define tu nivel). */}
-            <div className="bg-black/30 rounded-lg p-2.5 flex items-center justify-between border border-white/5">
+            <div className="bg-black/30 rounded-lg p-2.5 flex items-center justify-between border border-todu-border">
               <div className="flex items-center gap-2">
                 <Coins className="w-3.5 h-3.5 text-amber-400" />
-                <span className="text-[10px] font-bold text-slate-300 uppercase tracking-wider">Coins</span>
+                <span className="text-[10px] font-bold text-todu-text-muted uppercase tracking-wider">Coins</span>
               </div>
               <span className="text-sm font-black text-amber-400">{xpDisponible || 0}</span>
             </div>
@@ -100,11 +104,11 @@ function SidebarContent({ onNavigate }) {
       <nav className="flex-1 overflow-y-auto py-4">
         {NAV_SECTIONS.map((section, i) => (
           <div key={i} className="mb-4">
-            {section.label && <p className="px-6 mb-2 text-[10px] font-bold uppercase tracking-widest text-slate-500">{section.label}</p>}
+            {section.label && <p className="px-6 mb-2 text-[10px] font-bold uppercase tracking-widest text-todu-text-muted">{section.label}</p>}
             {section.items.map(({ href, label, Icon }) => {
               const isActive = pathname === href || pathname.startsWith(`${href}/`);
               return (
-                <Link key={href} href={href} onClick={onNavigate} className={`flex items-center gap-3 px-6 py-3 text-sm font-semibold transition-colors ${isActive ? 'text-violet-300 bg-violet-500/10 border-r-2 border-violet-400' : 'text-slate-400 hover:text-white hover:bg-white/5'}`}>
+                <Link key={href} href={href} onClick={onNavigate} className={`flex items-center gap-3 px-6 py-3 text-sm font-semibold transition-colors ${isActive ? 'text-violet-300 bg-violet-500/10 border-r-2 border-violet-400' : 'text-todu-text-muted hover:text-todu-text hover:bg-todu-surface-alt'}`}>
                   <Icon className="w-5 h-5" />
                   {label}
                 </Link>
@@ -114,7 +118,7 @@ function SidebarContent({ onNavigate }) {
         ))}
       </nav>
 
-      <div className="p-4 border-t border-white/5">
+      <div className="p-4 border-t border-todu-border">
         <button onClick={handleLogout} className="w-full flex items-center gap-3 px-4 py-3 text-sm font-semibold text-rose-400 hover:bg-rose-500/10 rounded-xl transition-colors">
           <LogOut className="w-5 h-5" />
           Cerrar sesión
@@ -128,7 +132,7 @@ export default function Sidebar() {
   const { isOpen, close } = useSidebar();
   return (
     <>
-      <aside className="hidden lg:block fixed inset-y-0 left-0 w-64 border-r border-white/5 z-40">
+      <aside className="hidden lg:block fixed inset-y-0 left-0 w-64 border-r border-todu-border z-40">
         <SidebarContent />
       </aside>
       <div className={`lg:hidden fixed inset-0 z-50 transition-opacity duration-200 ${isOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`}>

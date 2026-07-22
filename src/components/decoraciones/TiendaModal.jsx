@@ -14,18 +14,18 @@ export default function TiendaModal({
   const categorias = ['Trofeos', 'Mascotas', 'Pared', 'Aire', 'Accesorios', 'Piso', 'Ambiente'];
 
   return (
-    <div className="fixed inset-0 z-50 bg-[#150f27]/95 backdrop-blur-md flex flex-col items-center justify-center p-6">
-      <div className="bg-[#1f1638] border border-violet-500/30 rounded-[2rem] p-6 w-full max-w-lg relative shadow-[0_0_40px_rgba(139,92,246,0.15)] max-h-[85vh] overflow-y-auto">
-        <button onClick={onClose} className="absolute top-5 right-5 text-slate-400 hover:text-white bg-white/5 p-1.5 rounded-full transition-colors">
+    <div className="fixed inset-0 z-50 bg-todu-bg/95 backdrop-blur-md flex flex-col items-center justify-center p-6">
+      <div className="bg-todu-surface border border-violet-500/30 rounded-[2rem] p-6 w-full max-w-lg relative shadow-[0_0_40px_rgba(139,92,246,0.15)] max-h-[85vh] overflow-y-auto">
+        <button onClick={onClose} className="absolute top-5 right-5 text-todu-text-muted hover:text-todu-text bg-todu-surface-alt p-1.5 rounded-full transition-colors">
           <X className="w-5 h-5" />
         </button>
 
-        <div className="flex flex-col items-center text-center mb-6 border-b border-white/5 pb-6 pt-2">
+        <div className="flex flex-col items-center text-center mb-6 border-b border-todu-border pb-6 pt-2">
           <div className="w-16 h-16 bg-violet-500/10 border border-violet-500/30 rounded-2xl flex items-center justify-center text-violet-400 mb-4">
             <ShoppingBag className="w-8 h-8" />
           </div>
-          <h3 className="text-xl font-black text-white mb-1">Tienda de Todú</h3>
-          <p className="text-xs text-slate-400 mb-3">Decora tu cuarto con lo que ganes en tareas</p>
+          <h3 className="text-xl font-black text-todu-text mb-1">Tienda de Todú</h3>
+          <p className="text-xs text-todu-text-muted mb-3">Decora tu cuarto con lo que ganes en tareas</p>
           <div className="flex items-center gap-1.5 bg-amber-500/10 border border-amber-500/20 px-4 py-1.5 rounded-full">
             <Coins className="w-3.5 h-3.5 text-amber-400" />
             <span className="text-sm font-black text-amber-400">{xpDisponible ?? 0}</span>
@@ -49,12 +49,12 @@ export default function TiendaModal({
                   const comprado = yaComprado(item.id);
                   const noAlcanza = (xpDisponible ?? 0) < item.precio;
                   return (
-                    <div key={item.id} className="bg-black/30 border border-white/10 rounded-2xl p-3 flex flex-col items-center text-center">
+                    <div key={item.id} className="bg-todu-surface-alt border border-todu-border rounded-2xl p-3 flex flex-col items-center text-center">
                       <div className="w-16 h-16 mb-2">
                         <DecoracionSVG itemId={item.id} />
                       </div>
-                      <p className="text-xs font-bold text-white leading-tight mb-1">{item.nombre}</p>
-                      <p className="text-[10px] text-slate-500 leading-snug mb-2 line-clamp-2">{item.descripcion}</p>
+                      <p className="text-xs font-bold text-todu-text leading-tight mb-1">{item.nombre}</p>
+                      <p className="text-[10px] text-todu-text-muted leading-snug mb-2 line-clamp-2">{item.descripcion}</p>
                       {comprado ? (
                         <div className="w-full flex items-center justify-center gap-1 py-2 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-[10px] font-bold">
                           <Check className="w-3 h-3" /> Comprado

@@ -36,13 +36,13 @@ const { progreso, refrescar: refrescarGamificacion } = useGamificacion();
   };
 
   return (
-    <div className="min-h-screen bg-[#150f27] text-slate-200 font-sans pb-28 overflow-x-hidden relative">
+    <div className="min-h-screen bg-todu-bg text-todu-text font-sans pb-28 overflow-x-hidden relative">
 
       <header className="flex justify-between items-center p-6">
-        <button onClick={openSidebar} className="text-slate-400 hover:text-white transition-colors lg:hidden">
+        <button onClick={openSidebar} className="text-todu-text-muted hover:text-todu-text transition-colors lg:hidden">
           <Menu className="w-8 h-8" />
         </button>
-        <h1 className="text-xl font-bold text-white tracking-wide">Mi Todú</h1>
+        <h1 className="text-xl font-bold text-todu-text tracking-wide">Mi Todú</h1>
         <button
           onClick={() => setShowHelp(true)}
           className="text-violet-400 hover:text-violet-300 transition-colors bg-violet-500/10 p-2 rounded-full border border-violet-500/20"
@@ -55,7 +55,7 @@ const { progreso, refrescar: refrescarGamificacion } = useGamificacion();
 
         <div>
           <div className="flex items-center justify-between mb-3">
-            <h3 className="text-xs font-bold text-slate-400 uppercase tracking-widest">Cuarto de Todú</h3>
+            <h3 className="text-xs font-bold text-todu-text-muted uppercase tracking-widest">Cuarto de Todú</h3>
             <button
               onClick={() => setShowTienda(true)}
               className="flex items-center gap-2 text-xs font-black text-white uppercase tracking-wider bg-gradient-to-r from-violet-600 to-fuchsia-600 px-5 py-2.5 rounded-2xl shadow-[0_0_20px_rgba(139,92,246,0.4)] hover:scale-105 active:scale-95 transition-all"
@@ -133,25 +133,25 @@ const { progreso, refrescar: refrescarGamificacion } = useGamificacion();
       )}
 
       {showHelp && (
-        <div className="fixed inset-0 z-50 bg-[#150f27]/95 backdrop-blur-md flex flex-col items-center justify-center p-6">
-          <div className="bg-[#1f1638] border border-violet-500/30 rounded-[2rem] p-6 w-full max-w-sm relative shadow-[0_0_40px_rgba(139,92,246,0.15)] max-h-[85vh] overflow-y-auto">
-            <button onClick={() => setShowHelp(false)} className="absolute top-5 right-5 text-slate-400 hover:text-white bg-white/5 p-1.5 rounded-full transition-colors">
+        <div className="fixed inset-0 z-50 bg-todu-bg/95 backdrop-blur-md flex flex-col items-center justify-center p-6">
+          <div className="bg-todu-surface border border-violet-500/30 rounded-[2rem] p-6 w-full max-w-sm relative shadow-[0_0_40px_rgba(139,92,246,0.15)] max-h-[85vh] overflow-y-auto">
+            <button onClick={() => setShowHelp(false)} className="absolute top-5 right-5 text-todu-text-muted hover:text-todu-text bg-todu-surface-alt p-1.5 rounded-full transition-colors">
               <X className="w-5 h-5" />
             </button>
-            <div className="flex flex-col items-center text-center mb-6 border-b border-white/5 pb-6 pt-2">
+            <div className="flex flex-col items-center text-center mb-6 border-b border-todu-border pb-6 pt-2">
               <div className="w-16 h-16 bg-violet-500/10 border border-violet-500/30 rounded-2xl flex items-center justify-center text-violet-400 mb-4">
                 <HelpCircle className="w-8 h-8" />
               </div>
-              <h3 className="text-xl font-black text-white mb-1">Tu Todú, explicado</h3>
-              <p className="text-xs text-slate-400">Qué significa cada número aquí</p>
+              <h3 className="text-xl font-black text-todu-text mb-1">Tu Todú, explicado</h3>
+              <p className="text-xs text-todu-text-muted">Qué significa cada número aquí</p>
             </div>
 
             <div className="space-y-5 text-sm">
               <div className="flex gap-4 items-start">
                 <div className="mt-1 bg-violet-500/20 p-2 rounded-xl text-violet-400"><TrendingUp className="w-4 h-4" /></div>
                 <div>
-                  <h4 className="text-white font-bold mb-0.5">Nivel y XP Total</h4>
-                  <p className="text-slate-400 text-xs leading-relaxed">
+                  <h4 className="text-todu-text font-bold mb-0.5">Nivel y XP Total</h4>
+                  <p className="text-todu-text-muted text-xs leading-relaxed">
                     Tu progreso permanente. <span className="text-white font-bold">Nunca baja</span>, sin importar qué hagas en el Arcade — solo sube al completar tareas reales. De aquí sale tu Nivel.
                   </p>
                 </div>
@@ -160,8 +160,8 @@ const { progreso, refrescar: refrescarGamificacion } = useGamificacion();
               <div className="flex gap-4 items-start">
                 <div className="mt-1 bg-amber-500/20 p-2 rounded-xl text-amber-400"><Coins className="w-4 h-4" /></div>
                 <div>
-                  <h4 className="text-white font-bold mb-0.5">Coins</h4>
-                  <p className="text-slate-400 text-xs leading-relaxed">
+                  <h4 className="text-todu-text font-bold mb-0.5">Coins</h4>
+                  <p className="text-todu-text-muted text-xs leading-relaxed">
                     Tu cartera gastable. Sube junto con el XP al completar tareas, pero a diferencia del XP Total, <span className="text-white font-bold">sí puede bajar</span> — se usa para apostar en el Arcade y para comprar accesorios y decoraciones.
                   </p>
                 </div>
@@ -170,8 +170,8 @@ const { progreso, refrescar: refrescarGamificacion } = useGamificacion();
 <div className="flex gap-4 items-start">
                 <div className="mt-1 bg-orange-500/20 p-2 rounded-xl text-orange-400"><Flame className="w-4 h-4" /></div>
                 <div>
-                  <h4 className="text-white font-bold mb-0.5">Racha</h4>
-                  <p className="text-slate-400 text-xs leading-relaxed">
+                  <h4 className="text-todu-text font-bold mb-0.5">Racha</h4>
+                  <p className="text-todu-text-muted text-xs leading-relaxed">
                     Días seguidos completando al menos una tarea. Se pone naranja (1-2 días), verde (3-6 días), o morada brillante (7+ días) — entre más larga, más bono de XP recibes por cada tarea.
                   </p>
                 </div>
@@ -179,8 +179,8 @@ const { progreso, refrescar: refrescarGamificacion } = useGamificacion();
               <div className="flex gap-4 items-start">
                 <div className="mt-1 bg-fuchsia-500/20 p-2 rounded-xl text-fuchsia-400"><ShoppingBag className="w-4 h-4" /></div>
                 <div>
-                  <h4 className="text-white font-bold mb-0.5">Cuarto de Todú y Tienda</h4>
-                  <p className="text-slate-400 text-xs leading-relaxed">
+                  <h4 className="text-todu-text font-bold mb-0.5">Cuarto de Todú y Tienda</h4>
+                  <p className="text-todu-text-muted text-xs leading-relaxed">
                     Usa tus Coins en la <span className="text-white font-bold">Tienda</span> para comprar trofeos, mascotas, cuadros y más — cada cosa que compras aparece sola en el cuarto, sin que tengas que acomodarla.
                   </p>
                 </div>

@@ -22,6 +22,31 @@
   --todu-text-muted: #a89cd1;
 }
 
+/* Modo claro — solo se activa con [data-theme="light"] en <html>.
+   Implementación "de demo": cubre las pantallas de mayor visibilidad
+   (landing, login, Tareas, Sidebar, BottomNav). El resto de la app
+   sigue usando hex directo y no reacciona al toggle. */
+[data-theme="light"] {
+  --background: #f5f3fb;
+  --foreground: #1c1730;
+
+  --todu-bg: #f5f3fb;
+  --todu-surface: #ffffff;
+  --todu-surface-alt: #ede9fe;
+  --todu-border: #ddd6fe;
+
+  --todu-primary: #7c3aed;
+  --todu-primary-dark: #6d28d9;
+  --todu-primary-light: #8b5cf6;
+
+  --todu-gold: #b45309;
+  --todu-danger: #dc2626;
+  --todu-success: #059669;
+
+  --todu-text: #1c1730;
+  --todu-text-muted: #6b6485;
+}
+
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);

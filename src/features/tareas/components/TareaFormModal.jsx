@@ -125,12 +125,12 @@ export default function TareaFormModal({ onClose, onSave, tareaInicial, crearTar
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-[#150f27]/95 backdrop-blur-md flex flex-col items-center justify-center p-6">
-      <div className="bg-[#1f1638] border border-violet-500/30 rounded-[2rem] p-6 w-full max-w-sm relative shadow-[0_0_40px_rgba(139,92,246,0.15)] animate-in fade-in zoom-in-95 duration-200">
+    <div className="fixed inset-0 z-50 bg-todu-bg/95 backdrop-blur-md flex flex-col items-center justify-center p-6">
+      <div className="bg-todu-surface border border-violet-500/30 rounded-[2rem] p-6 w-full max-w-sm relative shadow-[0_0_40px_rgba(139,92,246,0.15)] animate-in fade-in zoom-in-95 duration-200">
         <button onClick={onClose} className="absolute top-5 right-5 text-slate-400 hover:text-white bg-white/5 p-1.5 rounded-full transition-colors">
           <X className="w-5 h-5" />
         </button>
-        <h3 className="text-xl font-black text-white mb-6">{esEdicion ? 'Editar tarea' : 'Nueva tarea'}</h3>
+        <h3 className="text-xl font-black text-todu-text mb-6">{esEdicion ? 'Editar tarea' : 'Nueva tarea'}</h3>
 
         <form onSubmit={handleSubmit} className="space-y-5">
           {error && (
